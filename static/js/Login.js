@@ -10,10 +10,10 @@ signIn.onclick=function (){
     signIn.classList.remove("disable");
 
 }
-signUp.onclick=function (){
+/*signUp.onclick=function (){
     nameInput.style.maxHeight="60px";
     title.innerHTML="Registro";
     signUp.classList.remove("disable");
     signIn.classList.add("disable");
 
-}
+}*/
