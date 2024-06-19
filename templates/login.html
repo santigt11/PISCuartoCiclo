@@ -1,43 +1,35 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Formulario</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Login</title>
     <link rel="stylesheet" href="../static/css/styleLogin.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
 </head>
 <body>
-<div class="container">
-    <div class="form-content">
-         <h1 id="title">Registro</h1>
-        <form>
-            <div class="input-group">
-                 <div class="input-field">
-                    <i class="fa-solid fa-envelope"></i>
-                    <input type="email" placeholder="Correo">
+    <div class="container">
+        <div class="form-content">
+            <h1 id="title">Login</h1>
+            <form action="/signin" method="POST">
+                <div class="input-group">
+                    <div class="input-field">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="correo" name="correo" placeholder="Correo">
+                    </div>
+                    <div class="input-field">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="contrasena" name="contrasena" placeholder="Contraseña">
+                    </div>
+                    <p>¿Olvidaste tu contraseña? <a href="#">Haz clic aquí</a></p>
                 </div>
-                 <div class="input-field">
-                    <i class="fa-solid fa-lock"></i>
-                    <input type="password" placeholder="Contraseña">
+                <div class="btn-field">
+                    <button id="signIn" type="submit">Login</button>
                 </div>
-                <p>Olvidaste tu contraseña <a href="#">click aqui</a></p>
-
-            </div>
-            <div class="btn-field">
-                <button id="signIn" type="button" class="disable">Login</button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 
-</div>
-
-
-
-
-        <script src="../static/js/Login.js"></script>
+    <script src="../static/js/Login.js"></script>
 </body>
 </html>

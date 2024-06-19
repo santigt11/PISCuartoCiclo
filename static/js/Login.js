@@ -10,6 +10,9 @@ signIn.onclick=function (){
     signIn.classList.remove("disable");
 
 }
+
+
+
 /*signUp.onclick=function (){
     nameInput.style.maxHeight="60px";
     title.innerHTML="Registro";
