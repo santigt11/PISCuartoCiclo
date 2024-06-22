@@ -33,5 +33,10 @@ def signin():
 def principal():
     return render_template('indexEstudiante.html')
 
+@app.route('/acercaDe')
+def informacion():
+    return render_template('about.html')
+
+
 if __name__ == '__main__':
     app.run(debug=True)
