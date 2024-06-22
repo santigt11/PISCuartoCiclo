@@ -31,7 +31,7 @@ def signin():
 # Ruta para la página principal
 @app.route('/inicio')
 def principal():
-    return render_template('index.html')
+    return render_template('indexEstudiante.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
