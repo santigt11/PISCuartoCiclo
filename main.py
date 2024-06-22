@@ -9,20 +9,6 @@ app = Flask(__name__)
 def login():
     return render_template('login.html')
 
-# Ruta para procesar el formulario de login
-#@app.route('/signin', methods=['POST'])
-#def signin():
-#    correo = request.form.get('correo')
-#    contrasena = request.form.get('contrasena')
-
-    # Verificar las credenciales aquí...
-
-   # if correo == 'abelmoral13@gmail.com' and contrasena == '123':
-        # Credenciales válidas, redirigir al usuario a la página principal
-    #    return redirect(url_for('principal'))
-    #else:
-        # Credenciales inválidas, mostrar el mensaje de error en el formulario de login
-     #   return render_template('error.html', mostrar_error=True)
 
 @app.route('/signin', methods=['POST'])
 def signin():

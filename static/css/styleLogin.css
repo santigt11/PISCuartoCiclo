@@ -1,7 +1,7 @@
 *{
     margin:0;
     padding:0;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Segoe UI', Arial, sans-serif;
     box-sizing: border-box;
     text-decoration:none ;
 }
@@ -13,14 +13,20 @@
     align-items: center;
     justify-content: center;
 }
-.form-content{
+.form-content {
     width: 100%;
     max-width: 450px;
-    background-color: #50535c;
     padding: 50px 60px 70px;
     text-align: center;
     border-radius: 25px;
-
+    background: linear-gradient(
+        to bottom right,
+        #1a1f2c,
+        #4b2a5c,
+        #50535c,
+        #5b6c7b
+    );
+    color: #fff; /* Color del texto */
 }
 .form-content h1{
     font-size: 30px;
