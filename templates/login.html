@@ -23,13 +23,23 @@
                     </div>
                     <p>¿Olvidaste tu contraseña? <a href="#">Haz clic aquí</a></p>
                 </div>
+
+
                 <div class="btn-field">
-                    <button id="signIn" type="submit">Login</button>
+                    <button id="loginButton" type="submit">Login</button>
                 </div>
+                 <div id="errorContainer" class="message-container">
+                    {% if error_message %}
+                        <div class="message error-message">{{ error_message }}</div>
+                    {% endif %}
+                </div>
+                <div id="attemptContainer" class="message-container"></div>
             </form>
         </div>
     </div>
 
     <script src="../static/js/Login.js"></script>
+
+
 </body>
 </html>

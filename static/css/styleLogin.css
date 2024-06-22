@@ -98,3 +98,39 @@ form p a{
     background-color: #eae9e4;
     color: #2C2F35;
 }
+
+/* styleERROR.css */
+/* Estilos para mensajes de error e intentos restantes */
+.message-container {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Estilos para mensajes de error */
+.error-message {
+    background-color: #f8d7da; /* Color de fondo rojo claro */
+    color: #721c24; /* Color del texto rojo oscuro */
+    border: 1px solid #f5c6cb; /* Borde rojo claro */
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+/* Estilos para mensajes de éxito */
+/**.success-message {
+    background-color: #d4edda; /* Color de fondo verde claro
+    color: #155724; /* Color del texto verde oscuro
+    border: 1px solid #c3e6cb; /* Borde verde claro
+    padding: 10px;
+    margin-bottom: 10px;
+}*/
+
+/* Estilos para mensajes de advertencia */
+/**.warning-message {
+    background-color: #fff3cd; /* Color de fondo amarillo claro
+    color: #856404; Color del texto amarillo oscuro
+    border: 1px solid #ffeeba;  Borde amarillo claro
+    padding: 10px;
+    margin-bottom: 10px;
+}*/

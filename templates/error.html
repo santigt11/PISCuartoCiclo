@@ -1,0 +1,32 @@
+<!-- error.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error de login</title>
+    <!-- Incluir archivo de Bootstrap -->
+    <link rel="stylesheet" href="../static/css/styleError.css">
+
+</head>
+<body class="bg-light">
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title text-center">Error de login</h2>
+                        <!-- Mensaje de error inicialmente oculto -->
+                        <p id="mensaje-error" class="error-message d-none">Credenciales incorrectas. Inténtelo de nuevo.</p>
+                        <!-- Botón de volver al formulario de login -->
+                        <p class="text-center"><a href="{{ url_for('login') }}" class="btn btn-primary">Volver al formulario de login</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="../static/js/error.js"></script>
+
+</body>
+</html>
