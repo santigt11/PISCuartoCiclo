@@ -82,7 +82,7 @@ form p a{
 }
 .btn-field{
     width: 100%;
-    display:flex;
+    display: flex; ;
     justify-content: center;
 }
 .btn-field button{
@@ -140,3 +140,4 @@ form p a{
     padding: 10px;
     margin-bottom: 10px;
 }*/
+
