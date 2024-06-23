@@ -37,6 +37,10 @@ def principal():
 def informacion():
     return render_template('about.html')
 
+@app.route('/modelo')
+def matematica():
+    return render_template('service.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
