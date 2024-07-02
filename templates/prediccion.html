@@ -3,8 +3,8 @@
 
 <head>
     <meta charset="utf-8">
-    <title>SERVICIOS</title>
-     <link rel="icon" href="../static/img/service-icon.ico" type="image/png">
+    <title>Predicción</title>
+     <link rel="icon" href="../static/img/icon-predict.ico" type="image/png">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="Free Website Template" name="keywords">
     <meta content="Free Website Template" name="description">
@@ -25,6 +25,7 @@
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="../static/css/style.min.css" rel="stylesheet">
+    <link href="../static/css/prediccion.css" rel="stylesheet">
 </head>
 
 <body>
@@ -32,7 +33,7 @@
     <div class="container-fluid p-0 nav-bar">
         <nav class="navbar navbar-expand-lg bg-none navbar-dark py-3">
             <a href="index.html" class="navbar-brand px-lg-4 m-0">
-                <h1 class="m-0 display-4 text-uppercase text-white">SERVICIOS</h1>
+                <h1 class="m-0 display-4 text-uppercase text-white">PREDICCIÓN ESTUDIANTIL</h1>
             </a>
             <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
                 <span class="navbar-toggler-icon"></span>
@@ -41,13 +42,13 @@
                 <div class="navbar-nav ml-auto p-4">
                     <a href="index.html" class="nav-item nav-link">Home</a>
                     <a href="about.html" class="nav-item nav-link">About</a>
-                    <a href="service.html" class="nav-item nav-link active">Service</a>
+                    <a href="service.html" class="nav-item nav-link">Service</a>
                     <a href="menu.html" class="nav-item nav-link">Menu</a>
                     <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages</a>
+                        <a href="#" class="nav-link dropdown-toggle active" data-toggle="dropdown">Pages</a>
                         <div class="dropdown-menu text-capitalize">
                             <a href="reservation.html" class="dropdown-item">Reservation</a>
-                            <a href="testimonial.html" class="dropdown-item">Testimonial</a>
+                            <a href="testimonial.html" class="dropdown-item active">Testimonial</a>
                         </div>
                     </div>
                     <a href="contact.html" class="nav-item nav-link">Contact</a>
@@ -61,84 +62,94 @@
     <!-- Page Header Start -->
     <div class="container-fluid page-header mb-5 position-relative overlay-bottom">
         <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 400px">
-            <h1 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase">SERVICIOS
-            </h1>
+            <h1 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase">PREDICCIÓN ESTUDIANTIL</h1>
             <div class="d-inline-flex mb-lg-5">
                 <a href="{{ url_for('principal') }}" class="btn btn-primary "><a class="text-white" >INICIO</a>
-                <p class="m-0 text-white px-2">/</p>
-                <p class="m-0 text-white">Servicios</p>
+                <p class="m-0 text-white px-2"></p>
+
             </div>
         </div>
     </div>
     <!-- Page Header End -->
 
-
-    <!-- Service Start -->
-    <div class="container-fluid pt-5">
-        <div class="container">
-            <div class="section-title">
-                <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">SERVICIOS</h4>
-                <h1 class="display-4">PREDICCIONES Y GRÁFICAS</h1>
+<!-- Input Form Start -->
+<div class="container py-5">
+    <div class="container">
+        <div class="section-title">
+            <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">Runge-Kutta Calculator</h4>
+            <h1 class="display-4">Enter Parameters</h1>
+        </div>
+        <form id="rungeKuttaForm">
+            <div class="form-group">
+                <label for="t0">Initial Time (t0)</label>
+                <input type="number" class="form-control" id="t0" value="0" required>
             </div>
-            <div class="row">
-                <div class="col-lg-6 mb-5">
-                    <div class="row align-items-center">
-                        <div class="col-sm-5">
-                            <img class="img-fluid mb-3 mb-sm-0" src="../static/img/prediccion.jpg" alt="">
-                        </div>
-                        <div class="col-sm-7">
-                            <h4><i class="fa fa-table service-icon"></i>GRÁFICAS ESTADÍSTICAS</h4>
-                            <p class="m-0" style="text-align: justify;">La aplicación permite mostrar gráficas estadísticas de la predicción que el usuario realiza
-                            con la finalidad de poder analizar de una mejor forma cuantos estudiantes desertan</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6 mb-5">
-                    <div class="row align-items-center">
-                        <div class="col-sm-5">
-                            <img class="img-fluid mb-3 mb-sm-0" src="../static/img/desercion.png" alt="">
-                        </div>
-                        <div class="col-sm-7">
-                            <h4><i class="fa fa-coffee service-icon"></i>PREDICCIÓN DESERCIÓN</h4>
-                            <p class="m-0" style="text-align: justify;">La aplicación permite a traves de un modelo matemático predecir cuantos estudiantes desertaron de la carrera de Minas en base a factores
-                            como: factor económico, factor psicológico, etc.</p>
-                            <a href="{{ url_for('prediccion') }}" class="btn btn-primary font-weight-bold py-2 px-4 mt-2">Más información</a>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="form-group">
+                <label for="y0">Initial Values (y0)</label>
+                <input type="text" class="form-control" id="y0" value="1000,550,450,0,0" required>
             </div>
+            <div class="form-group">
+                <label for="t_final">Final Time (t_final)</label>
+                <input type="number" class="form-control" id="t_final" value="50" required>
+            </div>
+            <div class="form-group">
+                <label for="h">Step Size (h)</label>
+                <input type="number" class="form-control" id="h" value="0.1" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Calculate</button>
+            <button type="button" class="btn btn-success ml-3" id="downloadReportBtn" style="display: none;">Download Report</button>
+        </form>
+        <div id="graph-container" class="graph-report-container">
+            <canvas id="myChart" style="width: 100%; height: 400px;"></canvas>
         </div>
     </div>
-    <!-- Service End -->
+</div>
+<!-- Input Form End -->
+
+
+
 
 
     <!-- Footer Start -->
     <div class="container-fluid footer text-white mt-5 pt-5 px-0 position-relative overlay-top">
         <div class="row mx-0 pt-5 px-sm-3 px-lg-5 mt-4">
             <div class="col-lg-3 col-md-6 mb-5">
-                <h4 class="text-white text-uppercase mb-4" style="letter-spacing: 3px;">UBICACIÓN</h4>
-                <p><i class="fa fa-map-marker-alt mr-2"></i>UNIVERSIDAD NACIONAL DE LOJA</p>
-                <p><i class="fa fa-phone-alt mr-2"></i>+2542373</p>
-                <p class="m-0"><i class="fa fa-envelope mr-2"></i>pentavirato@gmail.com</p>
+                <h4 class="text-white text-uppercase mb-4" style="letter-spacing: 3px;">Get In Touch</h4>
+                <p><i class="fa fa-map-marker-alt mr-2"></i>123 Street, New York, USA</p>
+                <p><i class="fa fa-phone-alt mr-2"></i>+012 345 67890</p>
+                <p class="m-0"><i class="fa fa-envelope mr-2"></i>info@example.com</p>
             </div>
             <div class="col-lg-3 col-md-6 mb-5">
-                <h4 class="text-white text-uppercase mb-4" style="letter-spacing: 3px;">SIGUENOS</h4>
-                <p>Sigue nuestras redes sociales para más información</p>
+                <h4 class="text-white text-uppercase mb-4" style="letter-spacing: 3px;">Follow Us</h4>
+                <p>Amet elitr vero magna sed ipsum sit kasd sea elitr lorem rebum</p>
                 <div class="d-flex justify-content-start">
                     <a class="btn btn-lg btn-outline-light btn-lg-square mr-2" href="#"><i class="fab fa-twitter"></i></a>
                     <a class="btn btn-lg btn-outline-light btn-lg-square mr-2" href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a class="btn btn-lg btn-outline-light btn-lg-square mr-2" href="#"><i class="fab fa-linkedin-in"></i></a>
                     <a class="btn btn-lg btn-outline-light btn-lg-square" href="#"><i class="fab fa-instagram"></i></a>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6 mb-5">
-                <h4 class="text-white text-uppercase mb-4" style="letter-spacing: 3px;">HORARIOS DE ATENCIÓN</h4>
+                <h4 class="text-white text-uppercase mb-4" style="letter-spacing: 3px;">Open Hours</h4>
                 <div>
-                    <h6 class="text-white text-uppercase">LUNES - DOMINGOS</h6>
-                    <p>TODO EL DÍA</p>
+                    <h6 class="text-white text-uppercase">Monday - Friday</h6>
+                    <p>8.00 AM - 8.00 PM</p>
+                    <h6 class="text-white text-uppercase">Saturday - Sunday</h6>
+                    <p>2.00 PM - 8.00 PM</p>
                 </div>
             </div>
-
+            <div class="col-lg-3 col-md-6 mb-5">
+                <h4 class="text-white text-uppercase mb-4" style="letter-spacing: 3px;">Newsletter</h4>
+                <p>Amet elitr vero magna sed ipsum sit kasd sea elitr lorem rebum</p>
+                <div class="w-100">
+                    <div class="input-group">
+                        <input type="text" class="form-control border-light" style="padding: 25px;" placeholder="Your Email">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary font-weight-bold px-3">Sign Up</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="container-fluid text-center text-white border-top mt-4 py-4 px-sm-3 px-md-5" style="border-color: rgba(256, 256, 256, .1) !important;">
             <p class="mb-2 text-white">Copyright &copy; <a class="font-weight-bold" href="#">Domain</a>. All Rights Reserved.</a></p>
@@ -146,7 +157,6 @@
         </div>
     </div>
     <!-- Footer End -->
-
 
 
     <!-- Back to Top -->
@@ -169,6 +179,9 @@
 
     <!-- Template Javascript -->
     <script src="../static/js/main.js"></script>
+    <script src="../static/js/prediccion.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </body>
 
 </html>
