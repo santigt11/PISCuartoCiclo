@@ -735,6 +735,7 @@ pre code {
 .col-7 {
   flex: 0 0 58.33333%;
   max-width: 58.33333%;
+
 }
 
 .col-8 {
@@ -957,6 +958,7 @@ pre code {
   }
   .order-sm-0 {
     order: 0;
+
   }
   .order-sm-1 {
     order: 1;
