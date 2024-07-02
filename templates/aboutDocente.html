@@ -3,8 +3,8 @@
 
 <head>
     <meta charset="utf-8">
-    <title>SERVICIOS</title>
-     <link rel="icon" href="../static/img/service-icon.ico" type="image/png">
+    <title>ACERCA DE</title>
+    <link rel="icon" href="../static/img/about-us-22.png" type="image/png">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="Free Website Template" name="keywords">
     <meta content="Free Website Template" name="description">
@@ -32,7 +32,7 @@
     <div class="container-fluid p-0 nav-bar">
         <nav class="navbar navbar-expand-lg bg-none navbar-dark py-3">
             <a href="index.html" class="navbar-brand px-lg-4 m-0">
-                <h1 class="m-0 display-4 text-uppercase text-white">SERVICIOS</h1>
+                <h1 class="m-0 display-4 text-uppercase text-white">DESERCIÓN</h1>
             </a>
             <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
                 <span class="navbar-toggler-icon"></span>
@@ -40,16 +40,8 @@
             <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
                 <div class="navbar-nav ml-auto p-4">
                     <a href="index.html" class="nav-item nav-link">Home</a>
-                    <a href="about.html" class="nav-item nav-link">About</a>
-                    <a href="service.html" class="nav-item nav-link active">Service</a>
-                    <a href="menu.html" class="nav-item nav-link">Menu</a>
-                    <div class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Pages</a>
-                        <div class="dropdown-menu text-capitalize">
-                            <a href="reservation.html" class="dropdown-item">Reservation</a>
-                            <a href="testimonial.html" class="dropdown-item">Testimonial</a>
-                        </div>
-                    </div>
+                    <a href="about.html" class="nav-item nav-link active">AcercaDe</a>
+                    <a href="service.html" class="nav-item nav-link">Service</a>
                     <a href="contact.html" class="nav-item nav-link">Contact</a>
                 </div>
             </div>
@@ -57,60 +49,54 @@
     </div>
     <!-- Navbar End -->
 
-
+                <!--<a href="{{ url_for('principal') }}" class="btn btn-primary "><a class="text-white" >INICIO</a>-->
     <!-- Page Header Start -->
     <div class="container-fluid page-header mb-5 position-relative overlay-bottom">
         <div class="d-flex flex-column align-items-center justify-content-center pt-0 pt-lg-5" style="min-height: 400px">
-            <h1 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase">SERVICIOS
-            </h1>
+            <h1 class="display-4 mb-3 mt-0 mt-lg-5 text-white text-uppercase">ACERCA DE NOSOTROS</h1>
             <div class="d-inline-flex mb-lg-5">
-                <a href="{{ url_for('principal') }}" class="btn btn-primary "><a class="text-white" >INICIO</a>
+
+
                 <p class="m-0 text-white px-2">/</p>
-                <p class="m-0 text-white">Servicios</p>
+                <p class="m-0 text-white">ACERCA DE</p>
             </div>
         </div>
     </div>
     <!-- Page Header End -->
 
 
-    <!-- Service Start -->
-    <div class="container-fluid pt-5">
+    <!-- About Start -->
+    <div class="container-fluid py-5">
         <div class="container">
             <div class="section-title">
-                <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">SERVICIOS</h4>
-                <h1 class="display-4">PREDICCIONES Y GRÁFICAS</h1>
+                <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">Acerca De</h4>
+                <h1 class="display-4">PROYECTO INTEGRADOR DE SABERES</h1>
             </div>
             <div class="row">
-                <div class="col-lg-6 mb-5">
-                    <div class="row align-items-center">
-                        <div class="col-sm-5">
-                            <img class="img-fluid mb-3 mb-sm-0" src="../static/img/prediccion.jpg" alt="">
-                        </div>
-                        <div class="col-sm-7">
-                            <h4><i class="fa fa-table service-icon"></i>GRÁFICAS ESTADÍSTICAS</h4>
-                            <p class="m-0" style="text-align: justify;">La aplicación permite mostrar gráficas estadísticas de la predicción que el usuario realiza
-                            con la finalidad de poder analizar de una mejor forma cuantos estudiantes desertan</p>
-                        </div>
+                <div class="col-lg-4 py-0 py-lg-5">
+                    <h1 class="mb-3">OBJETIVO DEL PROYECTO</h1>
+                    <p>Predecir la deserción estudiantil en la carrera de Minas, utilizando diferentes enfoques para tal predicción como lo son estudiantes ingresados en un rango de tiempo</p>
+                    <h5 class="mb-3"><i class="fa fa-check text-primary mr-3"></i>Prediccion estudiantil</h5>
+                    <h5 class="mb-3"><i class="fa fa-check text-primary mr-3"></i>Filtros predicción</h5>
+                    <h5 class="mb-3"><i class="fa fa-check text-primary mr-3"></i>Gráfica de la predicción</h5>
+                </div>
+                <div class="col-lg-4 py-5 py-lg-0" style="min-height: 500px;">
+                    <div class="position-relative h-100">
+                        <img class="position-absolute w-100 h-100" src="../static/img/aboutUS.png" style="object-fit: cover;">
                     </div>
                 </div>
-                <div class="col-lg-6 mb-5">
-                    <div class="row align-items-center">
-                        <div class="col-sm-5">
-                            <img class="img-fluid mb-3 mb-sm-0" src="../static/img/desercion.png" alt="">
-                        </div>
-                        <div class="col-sm-7">
-                            <h4><i class="fa fa-coffee service-icon"></i>PREDICCIÓN DESERCIÓN</h4>
-                            <p class="m-0" style="text-align: justify;">La aplicación permite a traves de un modelo matemático predecir cuantos estudiantes desertaron de la carrera de Minas en base a factores
-                            como: factor económico, factor psicológico, etc.</p>
-                            <a href="{{ url_for('prediccion') }}" class="btn btn-primary font-weight-bold py-2 px-4 mt-2">Más información</a>
-                        </div>
-                    </div>
-                </div>
+                <div class="col-lg-4 py-0 py-lg-5">
+                    <h1 class="mb-3">¿PARA QUIEN VA DIRIGIDO?</h1>
+                    <p>El siguiente programa esta dirigo para aquellas personas que desean conocer cuantos estudiantes desertaron de la carrera de Minas considerando varios aspectos, ya sea, el número de estudiantes ingresdos, factores económicos, psicologícos, etc.</p>
+                    <h5 class="mb-3"><i class="fa fa-check text-primary mr-3"></i>Predicción de estudiantes ingresados</h5>
+                    <h5 class="mb-3"><i class="fa fa-check text-primary mr-3"></i>Predicción de factor económico</h5>
+                    <h5 class="mb-3"><i class="fa fa-check text-primary mr-3"></i>Predicción de factor psicológico</h5>
 
+                </div>
             </div>
         </div>
     </div>
-    <!-- Service End -->
+    <!-- About End -->
 
 
     <!-- Footer Start -->
@@ -146,7 +132,6 @@
         </div>
     </div>
     <!-- Footer End -->
-
 
 
     <!-- Back to Top -->
