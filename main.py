@@ -49,9 +49,6 @@ def signin():
 @app.route('/inicio')
 def principal():
     return render_template('indexEstudiante.html')
-@app.route('/', methods=['GET', 'POST'])
-def inicio():
-    return render_template('index.html', dataUsuarios=data, total=total)
 
 @app.route('/acercaDe')
 def informacion():
@@ -63,6 +60,9 @@ def matematica():
 @app.route('/prediccion')
 def prediccion():
     return render_template('prediccion.html')
+@app.route('/contacto')
+def contacto():
+    return render_template('contactDocente.html')
 #Sistema de ecuaciones
 # Función para el sistema de ecuaciones
 def sistema_ecuaciones(t, y):
