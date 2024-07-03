@@ -49,9 +49,7 @@ def signin():
 @app.route('/inicio')
 def principal():
     return render_template('indexEstudiante.html')
-@app.route('/', methods=['GET', 'POST'])
-def inicio():
-    return render_template('index.html', dataUsuarios=data, total=total)
+
 
 @app.route('/acercaDe')
 def informacion():
