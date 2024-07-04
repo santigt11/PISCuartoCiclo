@@ -55,66 +55,88 @@ def principal():
 def informacion():
     return render_template('about.html')
 
-@app.route('/modelo')
-def matematica():
-    return render_template('service.html')
-@app.route('/prediccion')
-def prediccion():
-    return render_template('prediccion.html')
-#Sistema de ecuaciones
-# Función para el sistema de ecuaciones
-def sistema_ecuaciones(t, y):
-    tasa_ingreso = 100  # estudiantes por unidad de tiempo
-    tasa_desercion_total = 0.1  # fracción de estudiantes que desertan por unidad de tiempo
-    tasa_desercion_economica = 0.06  # fracción de estudiantes que desertan por factores económicos
-    proporcion_hombres = 0.55  # proporción de hombres en los nuevos ingresos
+# Constantes para el método de Euler
+alpha = 10.80  # Tasa de reprobación
+beta = 0.2     # Tasa de recuperación
+gamma = 0.3    # Coeficiente de deserción por reprobación aumentado
 
-    dy = np.zeros(5)
-    dy[0] = tasa_ingreso - tasa_desercion_total * y[0]
-    dy[1] = proporcion_hombres * tasa_ingreso - tasa_desercion_total * y[1]
-    dy[2] = (1 - proporcion_hombres) * tasa_ingreso - tasa_desercion_total * y[2]
-    dy[3] = tasa_desercion_total * y[0]
-    dy[4] = tasa_desercion_economica * y[0]
+# Funciones de derivadas para el método de Euler
+def dH_dt(H):
+    return 0.01 * H
 
-    return dy
+def dM_dt(M):
+    return 0.01 * M
 
-# Función para el método de Runge-Kutta de cuarto orden
-def runge_kutta_4(f, t0, y0, t_final, h):
-    t = np.arange(t0, t_final + h, h)
-    n = len(t)
-    y = np.zeros((n, len(y0)))
-    y[0] = y0
+def dS_dt(H, M):
+    return dH_dt(H) + dM_dt(M)
 
-    for i in range(1, n):
-        k1 = h * f(t[i - 1], y[i - 1])
-        k2 = h * f(t[i - 1] + 0.5 * h, y[i - 1] + 0.5 * k1)
-        k3 = h * f(t[i - 1] + 0.5 * h, y[i - 1] + 0.5 * k2)
-        k4 = h * f(t[i - 1] + h, y[i - 1] + k3)
+def dR_dt(S, R, H, M):
+    return alpha * dS_dt(H, M) - beta * R
 
-        y[i] = y[i - 1] + (k1 + 2 * k2 + 2 * k3 + k4) / 6
+def dD_dt(R):
+    return gamma * R
 
-    return t, y
-
-# Ruta para calcular los datos con el método de Runge-Kutta
-@app.route('/calculate', methods=['POST'])
-def calculate():
+# Ruta para calcular los datos con el método de Euler
+@app.route('/calculate_euler', methods=['POST'])
+def calculate_euler():
     data = request.get_json()
     t0 = float(data['t0'])
-    y0 = list(map(float, data['y0']))
     t_final = float(data['t_final'])
-    h = float(data['h'])
 
-    t, y = runge_kutta_4(sistema_ecuaciones, t0, y0, t_final, h)
+    # Condiciones iniciales y configuración de tiempo
+    h = 1  # Tamaño del paso (constante)
+    t_values = np.arange(t0, t_final + h, h)  # Valores de tiempo desde t0 hasta tf con incremento h
+    S0 = 1000.0  # Número total de estudiantes inicial
+    R0 = 0.0     # Número inicial de estudiantes reprobados
+    D0 = 0.0     # Número inicial de estudiantes desertados
+    H0 = 500.0   # Número inicial de hombres
+    M0 = 500.0   # Número inicial de mujeres
+
+    # Listas para almacenar los resultados
+    S_values = np.zeros_like(t_values)
+    R_values = np.zeros_like(t_values)
+    D_values = np.zeros_like(t_values)
+    H_values = np.zeros_like(t_values)
+    M_values = np.zeros_like(t_values)
+
+    # Condiciones iniciales
+    S_values[0] = S0
+    R_values[0] = R0
+    D_values[0] = D0
+    H_values[0] = H0
+    M_values[0] = M0
+
+    # Método de Euler para integración numérica
+    for i in range(1, len(t_values)):
+        H = H_values[i-1]
+        M = M_values[i-1]
+        S = S_values[i-1]
+        R = R_values[i-1]
+        D = D_values[i-1]
+
+        dS = dS_dt(H, M)
+        dR = dR_dt(S, R, H, M)
+        dD = dD_dt(R)
+
+        S_values[i] = S + h * dS
+        R_values[i] = R + h * dR
+        D_values[i] = D + h * dD
+        H_values[i] = H + h * dH_dt(H)
+        M_values[i] = M + h * dM_dt(M)
 
     # Preparar los datos para ser enviados al cliente
     response_data = {
-        't': t.tolist(),
-        'y': y[:, 4].tolist()  # Selecciona la columna correspondiente a 'y4' para los resultados
+        't': t_values.tolist(),
+        'S': S_values.tolist(),
+        'D': D_values.tolist()
     }
 
     return jsonify(response_data)
 
-
+# Ruta para la página de predicción
+@app.route('/prediccion')
+def prediccion():
+    return render_template('prediccion.html')
 
 
 if __name__ == '__main__':

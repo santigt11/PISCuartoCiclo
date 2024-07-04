@@ -1,71 +1,79 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Parámetros del sistema
+alpha = 10.80  # tasa de reprobación
+beta = 0.2     # tasa de recuperación
+gamma = 0.3    # coeficiente de deserción por reprobación aumentado
 
-def sistema_ecuaciones(t, y):
-    # y[0]: total de estudiantes
-    # y[1]: número de hombres
-    # y[2]: número de mujeres
-    # y[3]: número total de estudiantes que han desertado
-    # y[4]: número de estudiantes que han desertado por factor económico
+# Funciones de derivadas
+def dH_dt(H):
+    return 0.01 * H
 
-    tasa_ingreso = 100  # estudiantes por unidad de tiempo
-    tasa_desercion_total = 0.1  # fracción de estudiantes que desertan por unidad de tiempo
-    tasa_desercion_economica = 0.06  # fracción de estudiantes que desertan por factores económicos
-    proporcion_hombres = 0.55  # proporción de hombres en los nuevos ingresos
+def dM_dt(M):
+    return 0.01 * M
 
-    dy = np.zeros(5)
+def dS_dt(H, M):
+    return dH_dt(H) + dM_dt(M)
 
-    # Cambio en el total de estudiantes
-    dy[0] = tasa_ingreso - tasa_desercion_total * y[0]
+def dR_dt(S, R, H, M):
+    return alpha * dS_dt(H, M) - beta * R
 
-    # Cambio en el número de hombres
-    dy[1] = proporcion_hombres * tasa_ingreso - tasa_desercion_total * y[1]
+def dD_dt(R):
+    return gamma * R
 
-    # Cambio en el número de mujeres
-    dy[2] = (1 - proporcion_hombres) * tasa_ingreso - tasa_desercion_total * y[2]
+# Condiciones iniciales y configuración de tiempo
+t0 = 0.0
+tf = 5.0   # Tiempo final de simulación (por ejemplo, 10 años)
+h = 0.1     # Tamaño del paso (por ejemplo, 0.1 años)
 
-    # Cambio en el número total de desertores
-    dy[3] = tasa_desercion_total * y[0]
+# Números iniciales de estudiantes y desertados
+S0 = 1000.0  # Número total de estudiantes inicial
+R0 = 0.0     # Número inicial de estudiantes reprobados
+D0 = 0.0     # Número inicial de estudiantes desertados
+H0 = 500.0   # Número inicial de hombres
+M0 = 500.0   # Número inicial de mujeres
 
-    # Cambio en el número de desertores por factor económico
-    dy[4] = tasa_desercion_economica * y[0]
+# Listas para almacenar los resultados
+t_values = np.arange(t0, tf + h, h)  # Valores de tiempo desde t0 hasta tf con incremento h
+S_values = np.zeros_like(t_values)
+R_values = np.zeros_like(t_values)
+D_values = np.zeros_like(t_values)
+H_values = np.zeros_like(t_values)
+M_values = np.zeros_like(t_values)
 
-    return dy
+# Condiciones iniciales
+S_values[0] = S0
+R_values[0] = R0
+D_values[0] = D0
+H_values[0] = H0
+M_values[0] = M0
 
+# Método de Euler para integración numérica
+for i in range(1, len(t_values)):
+    H = H_values[i-1]
+    M = M_values[i-1]
+    S = S_values[i-1]
+    R = R_values[i-1]
+    D = D_values[i-1]
 
-def runge_kutta_4(f, t0, y0, t_final, h):
-    t = np.arange(t0, t_final + h, h)
-    n = len(t)
-    y = np.zeros((n, len(y0)))
-    y[0] = y0
+    dS = dS_dt(H, M)
+    dR = dR_dt(S, R, H, M)
+    dD = dD_dt(R)
 
-    for i in range(1, n):
-        k1 = h * f(t[i - 1], y[i - 1])
-        k2 = h * f(t[i - 1] + 0.5 * h, y[i - 1] + 0.5 * k1)
-        k3 = h * f(t[i - 1] + 0.5 * h, y[i - 1] + 0.5 * k2)
-        k4 = h * f(t[i - 1] + h, y[i - 1] + k3)
+    S_values[i] = S + h * dS
+    R_values[i] = R + h * dR
+    D_values[i] = D + h * dD
+    H_values[i] = H + h * dH_dt(H)
+    M_values[i] = M + h * dM_dt(M)
 
-        y[i] = y[i - 1] + (k1 + 2 * k2 + 2 * k3 + k4) / 6
-
-    return t, y
-
-
-# Parámetros iniciales
-t0 = 0
-y0 = [1000, 550, 450, 0, 0]  # [total, hombres, mujeres, desertores_totales, desertores_economicos]
-t_final = 50
-h = 0.1
-
-# Resolver el sistema de ecuaciones
-t, y = runge_kutta_4(sistema_ecuaciones, t0, y0, t_final, h)
-
-# Graficar los resultados
-plt.figure(figsize=(12, 8))
-plt.plot(t, y[:, 4], 'r-', label='Desertores por factor económico')
-plt.title('Deserción estudiantil por factor económico')
-plt.xlabel('Tiempo')
-plt.ylabel('Número de estudiantes')
+# Graficar resultados de S(t) y D(t)
+plt.figure(figsize=(10, 6))
+plt.plot(t_values, S_values, label="S(t) - Número Total de Estudiantes", color='blue')
+plt.plot(t_values, D_values, label="D(t) - Estudiantes Desertados", color='red')
+plt.xlabel("Tiempo (Años)")
+plt.ylabel("Número de Estudiantes")
+plt.title("Simulación de Estudiantes utilizando Método de Euler")
 plt.legend()
-plt.grid(True)
+plt.grid()
 plt.show()
