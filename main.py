@@ -138,6 +138,9 @@ def calculate_euler():
 def prediccion():
     return render_template('prediccion.html')
 
+@app.route('/contacto')
+def contacto():
+    return render_template('contactDocente.html')
 
 if __name__ == '__main__':
     app.run(debug=True, port=1000)
