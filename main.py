@@ -57,7 +57,7 @@ def informacion():
 
 # Constantes para el método de Euler
 alpha = 10.80  # Tasa de reprobación
-beta = 0.2     # Tasa de recuperación
+beta = 0.5     # Tasa de recuperación
 gamma = 0.3    # Coeficiente de deserción por reprobación aumentado
 
 # Funciones de derivadas para el método de Euler

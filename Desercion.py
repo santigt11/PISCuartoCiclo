@@ -22,9 +22,14 @@ def simular_ciclos(estudiantes_inicial, año_inicio, año_fin):
             estudiantes.append(estudiantes[-1] + nuevos_ingresos)
             nuevos_ingresos_lista.append(nuevos_ingresos)
 
-            # Deserción
+            # Aprobados
             total = estudiantes[-1]
+            aprobados = int(total * (1 - alpha))
+
+            # Reprobados
             reprobados = int(total * alpha)
+
+            # Desertores
             desertores = int(reprobados * (1 - beta))
             estudiantes.append(total - desertores)
             desertores_lista.append(desertores)
