@@ -14,7 +14,7 @@
 
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
@@ -26,6 +26,10 @@
     <!-- Customized Bootstrap Stylesheet -->
     <link href="../static/css/style.min.css" rel="stylesheet">
     <link href="../static/css/prediccion.css" rel="stylesheet">
+    <!-- Customized Bootstrap Stylesheet -->
+    <link href="../static/css/style.min.css" rel="stylesheet">
+    <link href="../static/css/prediccion.css" rel="stylesheet">
+
 </head>
 
 <body>
@@ -60,6 +64,7 @@
     <!-- Page Header End -->
 
 <!-- Input Form Start -->
+<!-- Input Form Start -->
 <div class="container py-5">
     <div class="container">
         <div class="section-title">
@@ -67,14 +72,27 @@
             <h1 class="display-4">INGRESE LOS PARÁMETROS</h1>
         </div>
         <form id="eulerForm">
-            <div class="form-group">
-                <label for="t0">VALOR INICIAL DE TIEMPO (t0)</label>
-                <input type="number" class="form-control" id="t0" value="0" required>
+            <div class="form-row form-container">
+                <div class="form-group">
+                    <label for="t0">VALOR INICIAL DE TIEMPO (t0)</label>
+                    <input type="number" class="form-control" id="t0" value="0" required>
+                </div>
+                <div class="form-row form-container">
+                    <div class="form-group">
+                        <label for="genero">GÉNERO</label>
+                        <select class="form-control" id="genero" required>
+                            <option value="">Seleccione...</option>
+                            <option value="masculino">Masculino</option>
+                            <option value="femenino">Femenino</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="t_final">TIEMPO FINAL (t_final)</label>
+                    <input type="number" class="form-control" id="t_final" value=" " required>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="t_final">TIEMPO FINAL (t_final)</label>
-                <input type="number" class="form-control" id="t_final" value=" " required>
-            </div>
+
             <button type="submit" class="btn btn-primary">CALCULAR</button>
             <button type="button" class="btn btn-success ml-3" id="downloadReportBtn" style="display: none;">DESCARGAR REPORTE</button>
         </form>
@@ -83,6 +101,8 @@
         </div>
     </div>
 </div>
+
+<!-- Input Form End -->
 <!-- Input Form End -->
 
 

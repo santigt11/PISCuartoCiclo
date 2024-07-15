@@ -25,6 +25,8 @@
 
     <!-- Customized Bootstrap Stylesheet -->
     <link href="../static/css/style.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css">
 </head>
 
 <body>
@@ -148,7 +150,7 @@
             <div class="owl-carousel testimonial-carousel">
                 <div class="testimonial-item">
                     <div class="d-flex align-items-center mb-3">
-                        <img class="img-presentation" src="../static/img/Testimonial-1.jpeg" alt style= "height: 100px">
+                        <img class="img-presentation" src="../static/img/Testimonial-1.jpeg" alt style= "height: 150px">
                         <div class="ml-3">
                             <h4>Steven Luna</h4>
                             <i>Diseñador - Analista</i>
@@ -160,7 +162,7 @@
                 </div>
                 <div class="testimonial-item">
                     <div class="d-flex align-items-center mb-3">
-                        <img class="img-presentation" src="../static/img/testimonial-2.jpeg" alt style= "height: 100px">
+                        <img class="img-presentation" src="../static/img/testimonial-2.jpeg" alt style= "height: 150px">
                         <div class="ml-3">
                             <h4>Brian Aguinsaca</h4>
                             <i>Analista</i>
@@ -171,7 +173,7 @@
                 </div>
                 <div class="testimonial-item">
                     <div class="d-flex align-items-center mb-3">
-                        <img class="img-presentation" src="../static/img/testimonial-3.jpeg" alt style = "height: 100px">
+                        <img class="img-presentation" src="../static/img/testimonial-3.jpeg" alt style = "height: 150px">
                         <div class="ml-3">
                             <h4>Abel Mora</h4>
                             <i>Desarrollador de software - Analista</i>
@@ -182,7 +184,7 @@
                 </div>
                 <div class="testimonial-item">
                     <div class="d-flex align-items-center mb-3">
-                        <img class="img-presentation" src="../static/img/testimonial-4.jpeg" alt style = "height: 100px">
+                        <img class="img-presentation" src="../static/img/testimonial-4.jpeg" alt style = "height: 150px">
                         <div class="ml-3">
                             <h4>Santiago Guachizaca </h4>
                             <i>Desarrollador de software - Gestor Base de Datos</i>
@@ -193,7 +195,7 @@
                 </div>
                 <div class="testimonial-item">
                     <div class="d-flex align-items-center mb-3">
-                        <img class="img-presentation" src="../static/img/testimonial-5.jpeg" alt style= "height: 100px">
+                        <img class="img-presentation" src="../static/img/testimonial-5.jpeg" alt style= "height: 150px">
                         <div class="ml-3">
                             <h4>Estefanía Torres </h4>
                             <i>Analista - Diseñadora de interfaces</i>
@@ -263,6 +265,34 @@
 
     <!-- Template Javascript -->
     <script src="../static/js/main.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
+<script>
+$(document).ready(function(){
+    $(".testimonial-carousel").owlCarousel({
+        autoplay: true,
+        smartSpeed: 1500,
+        margin: 30,
+        dots: true,
+        loop: true,
+        center: true,
+        responsive: {
+            0:{
+                items:1
+            },
+            576:{
+                items:1
+            },
+            768:{
+                items:2
+            },
+            992:{
+                items:3
+            }
+        }
+    });
+});
+</script>
 </body>
 
 </html>
