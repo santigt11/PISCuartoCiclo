@@ -71,27 +71,29 @@
             <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">MODELO DE PREDICCIÓN DE LA DESERCIÓN</h4>
             <h1 class="display-4">INGRESE LOS PARÁMETROS</h1>
         </div>
-        <form id="eulerForm">
+        <form id="rungeKuttaForm">
             <div class="form-row form-container">
                 <div class="form-group">
-                    <label for="t0">Tiempo de Inicio de la Predicción</label>
-                    <input type="number" class="form-control" id="t0" value=" " required>
+                    <label for="estudiantes_inicial">Número Inicial de Estudiantes</label>
+                    <input type="number" class="form-control" id="estudiantes_inicial" required>
                 </div>
-                <div class="form-row form-container">
-                    <div class="form-group">
-                        <label for="genero">GÉNERO</label>
-                        <select class="form-control" id="genero" required>
-                            <option value="">Seleccione...</option>
-                            <option value="masculino">Masculino</option>
-                            <option value="femenino">Femenino</option>
-                            <option value="general">General</option>
-                        </select>
-                    </div>
+                <div class="form-group">
+                    <label for="año_inicio">Año de Inicio</label>
+                    <input type="number" class="form-control" id="año_inicio" required>
                 </div>
-            </div>
-            <div class="form-group">
-                <label for="t_final">Tiempo Final de la Predicción </label>
-                <input type="number" class="form-control" id="t_final" value=" " required>
+                <div class="form-group">
+                    <label for="año_fin">Año Final</label>
+                    <input type="number" class="form-control" id="año_fin" required>
+                </div>
+                <div class="form-group">
+                    <label for="opcion">GÉNERO</label>
+                    <select class="form-control" id="opcion" required>
+                        <option value="">Seleccione...</option>
+                        <option value="hombres">Masculino</option>
+                        <option value="mujeres">Femenino</option>
+                        <option value="general">General</option>
+                    </select>
+                </div>
             </div>
             <button type="submit" class="btn btn-primary">CALCULAR</button>
             <button type="button" class="btn btn-success ml-3" id="downloadReportBtn" style="display: none;">DESCARGAR REPORTE</button>
@@ -101,8 +103,6 @@
         </div>
     </div>
 </div>
-
-
 <!-- Input Form End -->
 
 
