@@ -4,7 +4,9 @@ import numpy as np
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask import Flask, render_template, request, redirect, url_for
 
-from PISCuartoCiclo.RungeKuttaSimulator import RungeKuttaSimulator
+
+
+from RungeKuttaSimulator import RungeKuttaSimulator
 from configBD import *
 
 app = Flask(__name__)
