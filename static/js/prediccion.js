@@ -141,96 +141,82 @@ function generateCycleLabels(años) {
 }
 
 function generateAndDownloadReport(data) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
     const ciclos = generateCycleLabels(data.años);
     const estudiantesPorCiclo = data.estudiantes.filter((_, index) => index % 2 !== 0);
 
-    const reportContent =`
-        <!DOCTYPE html>
-        <html lang="es">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Informe de Simulación Runge-Kutta</title>
-            <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; }
-                .container { max-width: 800px; margin: 20px auto; padding: 20px; border: 1px solid #ccc; }
-                h2 { color: #007bff; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h2>Informe de Simulación Runge-Kutta</h2>
-                <h3>Datos de Resultado</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Ciclo</th>
-                            <th>Número de Estudiantes</th>
-                            <th>Nuevos Ingresos</th>
-                            <th>Desertores</th>
-                        </tr>
-                    </thead>
-                     <tbody>
-                        ${ciclos.map((ciclo, index) => `
-                         <tr>
-                             <td>${ciclo}</td>
-                            <td>${formatNumber(estudiantesPorCiclo[index])}</td>
-                             <td>${formatNumber(data.nuevos_ingresos[index])}</td>
-                            <td>${formatNumber(data.desertores[index])}</td>
-                         </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-                <h3>Gráfico de Resultados</h3>
-                <canvas id="reportChart"></canvas>
-            </div>
+    doc.setFontSize(18);
+    doc.text('Informe de Simulación Runge-Kutta', 10, 10);
+    doc.setFontSize(12);
+    doc.text('Datos de Resultado', 10, 20);
 
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-             <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const ctx = document.getElementById('reportChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: ${JSON.stringify(ciclos)},
-                        datasets: [{
-                            label: 'Número de Estudiantes',
-                            data: ${JSON.stringify(estudiantesPorCiclo)},
-                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1,
-                            fill: false
-                        }, {
-                            label: 'Desertores',
-                            data: ${JSON.stringify(data.desertores)},
-                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            borderWidth: 1,
-                            fill: false
-                        }, {
-                            label: 'Nuevos Ingresos',
-                            data: ${JSON.stringify(data.nuevos_ingresos)},
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1,
-                            fill: false
-                        }]
-                    },
-        </body>
-        </html>
-    `;
+    let y = 30;
+    doc.autoTable({
+        startY: y,
+        head: [['Ciclo', 'Número de Estudiantes', 'Nuevos Ingresos', 'Desertores']],
+        body: ciclos.map((ciclo, index) => [
+            ciclo,
+            formatNumber(estudiantesPorCiclo[index]),
+            formatNumber(data.nuevos_ingresos[index]),
+            formatNumber(data.desertores[index])
+        ]),
+    });
 
-    const blob = new Blob([reportContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
+    y = doc.lastAutoTable.finalY + 10;
+    doc.text('Gráfico de Resultados', 10, y);
+    y += 10;
 
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'runge_kutta_report.html';
-    a.click();
+    const chartData = {
+        labels: ciclos,
+        datasets: [{
+            label: 'Número de Estudiantes',
+            data: estudiantesPorCiclo,
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1,
+            fill: false
+        }, {
+            label: 'Desertores',
+            data: data.desertores,
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1,
+            fill: false
+        }, {
+            label: 'Nuevos Ingresos',
+            data: data.nuevos_ingresos,
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
+            fill: false
+        }]
+    };
 
-    URL.revokeObjectURL(url);
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 400;
+    const ctx = canvas.getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: false,
+            maintainAspectRatio: false,
+            scales: {
+                x: { display: true },
+                y: { display: true }
+            }
+        }
+    });
+
+    setTimeout(() => {
+        const imgData = canvas.toDataURL('image/png');
+        doc.addImage(imgData, 'PNG', 10, y, 180, 80);
+
+        doc.save('runge_kutta_report.pdf');
+    }, 1000);
 }
 
 function formatNumber(num) {
