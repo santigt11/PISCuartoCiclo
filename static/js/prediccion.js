@@ -168,32 +168,39 @@ function generateAndDownloadReport(data) {
     doc.text('Gráfico de Resultados', 10, y);
     y += 10;
 
+    // Calculamos todos los puntos para cada etapa del ciclo
+    const allPoints = [];
+    for (let i = 0; i < data.estudiantes.length; i += 2) {
+        const inicioPeríodo = data.estudiantes[i];
+        const despuésIngresos = inicioPeríodo + data.nuevos_ingresos[i/2];
+        const despuésDeserciones = despuésIngresos - data.desertores[i/2];
+        const finPeríodo = despuésDeserciones; // Este es el valor correcto para fin del período
+
+        allPoints.push(inicioPeríodo);
+        allPoints.push(despuésIngresos);
+        allPoints.push(despuésDeserciones);
+        allPoints.push(finPeríodo);
+    }
+
     const chartData = {
-        labels: ciclos,
+        labels: ciclos.flatMap(ciclo => [
+            ciclo + ' Inicio',
+            ciclo + ' Ingresos',
+            ciclo + ' Desertores',
+            ciclo + ' Fin'
+        ]),
         datasets: [{
             label: 'Número de Estudiantes',
-            data: estudiantesPorCiclo,
             backgroundColor: 'rgba(54, 162, 235, 0.2)',
             borderColor: 'rgba(54, 162, 235, 1)',
             borderWidth: 1,
-            fill: false
-        }, {
-            label: 'Desertores',
-            data: data.desertores,
-            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-            borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 1,
-            fill: false
-        }, {
-            label: 'Nuevos Ingresos',
-            data: data.nuevos_ingresos,
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1,
-            fill: false
+            data: allPoints,
+            pointRadius: 5,
+            pointHoverRadius: 7
         }]
     };
 
+    
     const canvas = document.createElement('canvas');
     canvas.width = 800;
     canvas.height = 400;
