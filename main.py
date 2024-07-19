@@ -3,6 +3,8 @@ import time
 import numpy as np
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask import Flask, render_template, request, redirect, url_for
+
+from RungeKuttaSimulator import RungeKuttaSimulator
 from configBD import *
 
 app = Flask(__name__)
@@ -45,6 +47,16 @@ def signin():
     else:
         error_message = 'Credenciales incorrectas. Intenta de nuevo.'
         return render_template('login.html', error_message=error_message)
+
+def contarUsuarios():
+    conexion_MySQL = connectionBD()
+    mycursos = conexion_MySQL.cursor(dictionary=True)
+    querySQL = "SELECT COUNT(*) FROM PIS.Estudiantes"
+    mycursos.execute(querySQL)
+    count = mycursos.fetchone()
+    mycursos.close()
+    return count
+
 # Ruta para la página principal
 @app.route('/inicio')
 def principal():
