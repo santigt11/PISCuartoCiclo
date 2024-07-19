@@ -55,3 +55,16 @@
 .table tbody+tbody {
     border-top: 2px solid #dee2e6;
 }
+.form-row {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+            padding: 0 10px;
+        }
+        .form-container {
+            display: flex;
+            justify-content: space-between;
+        }
