@@ -51,11 +51,14 @@ def signin():
 def contarUsuarios():
     conexion_MySQL = connectionBD()
     mycursos = conexion_MySQL.cursor(dictionary=True)
-    querySQL = "SELECT COUNT(*) FROM PIS.Estudiantes"
+    querySQL = "SELECT COUNT(*) AS total FROM PIS.Estudiantes"
     mycursos.execute(querySQL)
-    count = mycursos.fetchone()
-    mycursos.close()
-    return count
+    return list(mycursos.fetchone().values())[0]
+
+@app.route('/obtener_estudiantes', methods=['GET'])
+def obtener_estudiantes():
+    total_estudiantes = contarUsuarios()
+    return jsonify({'total': total_estudiantes})
 
 # Ruta para la página principal
 @app.route('/inicio')

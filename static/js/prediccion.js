@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', function () {
     const rungeKuttaForm = document.getElementById('rungeKuttaForm');
     const downloadReportBtn = document.getElementById('downloadReportBtn');
@@ -6,31 +5,39 @@ document.addEventListener('DOMContentLoaded', function () {
     rungeKuttaForm.addEventListener('submit', function (event) {
         event.preventDefault();
 
-        const formData = {
-            estudiantes_inicial: parseInt(document.getElementById('estudiantes_inicial').value),
-            año_inicio: parseInt(document.getElementById('año_inicio').value),
-            año_fin: parseInt(document.getElementById('año_fin').value),
-            opcion: document.getElementById('opcion').value
-        };
+        // Primero, obtenemos el número de estudiantes de la base de datos
+        fetch('/obtener_estudiantes')
+            .then(response => response.json())
+            .then(data => {
+                const estudiantes_inicial = data.total;
 
-        fetch('/calculate_rungeKutta', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            generateChart(data);
-            downloadReportBtn.style.display = 'block';
-            downloadReportBtn.addEventListener('click', function () {
-                generateAndDownloadReport(data);
+                // Luego, enviamos todos los datos para el cálculo
+                const formData = {
+                    estudiantes_inicial: estudiantes_inicial,
+                    año_inicio: parseInt(document.getElementById('año_inicio').value),
+                    año_fin: parseInt(document.getElementById('año_fin').value),
+                    opcion: document.getElementById('opcion').value
+                };
+
+                return fetch('/calculate_rungeKutta', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+            })
+            .then(response => response.json())
+            .then(data => {
+                generateChart(data);
+                downloadReportBtn.style.display = 'block';
+                downloadReportBtn.addEventListener('click', function () {
+                    generateAndDownloadReport(data);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
             });
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
     });
 });
 
