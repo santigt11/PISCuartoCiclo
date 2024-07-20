@@ -146,15 +146,54 @@ function generateAndDownloadReport(data) {
 
     const ciclos = generateCycleLabels(data.años);
     const estudiantesPorCiclo = data.estudiantes.filter((_, index) => index % 2 !== 0);
+    doc.setFont('Helvetica','bold');
+    var text = 'Informe de Simulación Runge-Kutta';
+    var pageWidth = doc.internal.pageSize.getWidth();
+    var textWidth = doc.getStringUnitWidth(text) * doc.internal.getFontSize() / doc.internal.scaleFactor;
+    var textX = (pageWidth - textWidth) / 2;
 
     doc.setFontSize(18);
-    doc.text('Informe de Simulación Runge-Kutta', 10, 10);
-    doc.setFontSize(12);
-    doc.text('Datos de Resultado', 10, 20);
+    doc.text(text, textX, 15);
+   
+    doc.setFontSize(15);
+    doc.text('Resultados', 10, 25);
 
-    let y = 30;
+    doc.setFont('helvetica', 'normal');
+
+    let x = 35;
+    for (let i = 1; i < data.estudiantes.length; i += 2) {
+        const año = data.años[0] + Math.floor((i - 1) / 4);
+        const ciclo = (i - 1) % 4 >= 2 ? 2 : 1;
+
+        const inicio_ciclo = data.estudiantes[i - 1];
+        const ingresados = data.nuevos_ingresos[Math.floor(i / 2)];
+        const desertados = data.desertores[Math.floor(i / 2)];
+        const fin_ciclo = data.estudiantes[i + 1];
+
+        const tableData = [
+            ['Inicio del Período', formatNumber(inicio_ciclo)],
+            ['Nuevos Ingresos', formatNumber(ingresados)],
+            ['Desertores', formatNumber(desertados)],
+            ['Fin del Período', formatNumber(fin_ciclo)]
+        ];
+
+        doc.setFontSize(13);
+        doc.text(`El ciclo ${ciclo} del año ${año} tiene los siguientes resultados: `, 10, x);
+        x += 10;
+        
+        doc.autoTable({
+            startY: x,
+            head: [['Concepto', 'Valor']],
+            body: tableData,
+            theme: 'grid',
+            styles: { cellPadding: 2, fontSize: 12 },
+        });
+
+        x = doc.lastAutoTable.finalY + 10; // Actualiza la posición y para la próxima tabla
+    }
+    
     doc.autoTable({
-        startY: y,
+        startY: x,
         head: [['Ciclo', 'Número de Estudiantes', 'Nuevos Ingresos', 'Desertores']],
         body: ciclos.map((ciclo, index) => [
             ciclo,
@@ -164,9 +203,9 @@ function generateAndDownloadReport(data) {
         ]),
     });
 
-    y = doc.lastAutoTable.finalY + 10;
-    doc.text('Gráfico de Resultados', 10, y);
-    y += 10;
+    x = doc.lastAutoTable.finalY + 10;
+    doc.text('Gráfico de Resultados', 10, x);
+    x += 10;
 
     // Calculamos todos los puntos para cada etapa del ciclo
     const allPoints = [];
@@ -220,7 +259,7 @@ function generateAndDownloadReport(data) {
 
     setTimeout(() => {
         const imgData = canvas.toDataURL('image/png');
-        doc.addImage(imgData, 'PNG', 10, y, 180, 80);
+        doc.addImage(imgData, 'PNG', 10, x, 180, 80);
 
         doc.save('runge_kutta_report.pdf');
     }, 1000);
