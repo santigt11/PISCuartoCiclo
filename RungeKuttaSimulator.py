@@ -16,6 +16,7 @@ class RungeKuttaSimulator:
             alpha1, beta1 = 1.80, 0.8
         elif opcion == "mujeres":
             alpha1, beta1 = 1.60, 0.8
+
         else:
             alpha1, beta1 = self.alpha, self.beta
 

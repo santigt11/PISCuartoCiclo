@@ -2,10 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Parámetros del sistema
-alpha = 1.80  # tasa de reprobación por ciclo
+alpha = 1.2  # tasa de reprobación por ciclo
 beta = 0.8  # tasa de retención (1 - tasa de deserción)
-gamma = 0.06  # tasa de crecimiento de nuevos ingresos por ciclo
-delta = 0.30  # tasa de aprobación para la nueva ecuación
+gamma = 0.13  # tasa de crecimiento de nuevos ingresos por ciclo
+delta = 0.32  # tasa de aprobación para la nueva ecuación
 
 def aprobados_runge_kutta(total_estudiantes, t0, t_final, h):
     aprobados_lista = []
