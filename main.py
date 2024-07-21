@@ -5,6 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask import Flask, render_template, request, redirect, url_for
 
 from PISCuartoCiclo.RungeKuttaSimulator import RungeKuttaSimulator
+from PISCuartoCiclo.RungeKuttaSimulator1 import RungeKuttaSimulator1
 from configBD import *
 
 app = Flask(__name__)
