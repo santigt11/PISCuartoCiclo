@@ -66,9 +66,10 @@ def calculate_rungeKutta():
     año_inicio = int(data['año_inicio'])
     año_fin = int(data['año_fin'])
     opcion = data['opcion']
+    factor= data['factor']
 
-    simulator = RungeKuttaSimulator()
-    estudiantes, nuevos_ingresos, desertores = simulator.simular_ciclos(estudiantes_inicial, año_inicio, año_fin, opcion)
+    simulator = RungeKuttaSimulator1()
+    estudiantes, nuevos_ingresos, desertores = simulator.simular_ciclos(estudiantes_inicial, año_inicio, año_fin, opcion,factor)
 
     años = list(range(año_inicio, año_fin + 1))
 

@@ -10,7 +10,8 @@ document.addEventListener('DOMContentLoaded', function () {
             estudiantes_inicial: parseInt(document.getElementById('estudiantes_inicial').value),
             año_inicio: parseInt(document.getElementById('año_inicio').value),
             año_fin: parseInt(document.getElementById('año_fin').value),
-            opcion: document.getElementById('opcion').value
+            opcion: document.getElementById('opcion').value,
+            factor: document.getElementById('factor').value
         };
 
         fetch('/calculate_rungeKutta', {
@@ -161,7 +162,7 @@ function generateAndDownloadReport(data) {
         </head>
         <body>
             <div class="container">
-                <h2>Informe de Simulación Runge-Kutta</h2>
+                <h2>Inform de predicción de la deserción</h2>
                 <h3>Datos de Resultado</h3>
                 <table>
                     <thead>
