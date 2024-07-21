@@ -83,8 +83,16 @@ function generateAndDownloadReport() {
     doc.text('Informe de Simulaciones Runge-Kutta', 105, 15, null, null, 'center');
 
     let currentPage = 1;
+    let processedPredictions = 0;
 
-    predicciones.forEach((data, index) => {
+    function processPrediction(index) {
+        if (index >= predicciones.length) {
+            doc.save('multiple_runge_kutta_report.pdf');
+            resetAfterDownload();
+            return;
+        }
+
+        const data = predicciones[index];
         let y = 25;
 
         if (index > 0) {
@@ -95,9 +103,6 @@ function generateAndDownloadReport() {
         doc.setFontSize(14);
         doc.text(`Predicción ${index + 1}`, 10, y);
         y += 10;
-
-        const ciclos = generateCycleLabels(data.años);
-        const estudiantesPorCiclo = data.estudiantes.filter((_, i) => i % 2 !== 0);
 
         doc.setFontSize(12);
         doc.setFont('helvetica', 'normal');
@@ -132,17 +137,6 @@ function generateAndDownloadReport() {
 
             y = doc.lastAutoTable.finalY + 10;
         }
-
-        doc.autoTable({
-            startY: y,
-            head: [['Ciclo', 'Número de Estudiantes', 'Nuevos Ingresos', 'Desertores']],
-            body: ciclos.map((ciclo, i) => [
-                ciclo,
-                formatNumber(estudiantesPorCiclo[i]),
-                formatNumber(data.nuevos_ingresos[i]),
-                formatNumber(data.desertores[i])
-            ]),
-        });
 
         y = doc.lastAutoTable.finalY + 10;
 
@@ -180,31 +174,29 @@ function generateAndDownloadReport() {
 
             doc.addImage(imgData, 'PNG', 10, y, 180, 80);
 
-            // Si no es la última predicción, añadir una nueva página
-            if (index < predicciones.length - 1) {
-                doc.addPage();
-                currentPage++;
-            } else {
-                // Si es la última predicción, guardar el PDF
-                doc.save('multiple_runge_kutta_report.pdf');
-
-                // Reiniciar todo después de descargar el informe
-                predicciones = [];
-                if (currentChart) {
-                    currentChart.destroy();
-                    currentChart = null;
-                }
-                downloadReportBtn.style.display = 'none';
-                newPredictionBtn.style.display = 'none';
-                rungeKuttaForm.style.display = 'block';
-                rungeKuttaForm.reset();
-
-                const mainCanvas = document.getElementById('myChart');
-                const mainCtx = mainCanvas.getContext('2d');
-                mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
-            }
+            // Procesar la siguiente predicción
+            processPrediction(index + 1);
         }, 1000);
-    });
+    }
+
+    // Iniciar el proceso con la primera predicción
+    processPrediction(0);
+}
+
+function resetAfterDownload() {
+    predicciones = [];
+    if (currentChart) {
+        currentChart.destroy();
+        currentChart = null;
+    }
+    downloadReportBtn.style.display = 'none';
+    newPredictionBtn.style.display = 'none';
+    rungeKuttaForm.style.display = 'block';
+    rungeKuttaForm.reset();
+
+    const mainCanvas = document.getElementById('myChart');
+    const mainCtx = mainCanvas.getContext('2d');
+    mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
 }
 
 function generateChart(data) {
