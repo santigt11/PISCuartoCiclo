@@ -1,24 +1,35 @@
+let predicciones = [];
+let graficas = [];
+let currentChart = null;
+
 document.addEventListener('DOMContentLoaded', function () {
     const rungeKuttaForm = document.getElementById('rungeKuttaForm');
     const downloadReportBtn = document.getElementById('downloadReportBtn');
+    const newPredictionBtn = document.getElementById('newPredictionBtn');
+    const graphContainer = document.getElementById('graph-container');
 
-    rungeKuttaForm.addEventListener('submit', function (event) {
+    rungeKuttaForm.addEventListener('submit', handleFormSubmit);
+    downloadReportBtn.addEventListener('click', generateAndDownloadReport);
+    newPredictionBtn.addEventListener('click', handleNewPrediction);
+
+    function handleFormSubmit(event) {
         event.preventDefault();
 
-        // Primero, obtenemos el número de estudiantes de la base de datos
+        if (predicciones.length >= 3) {
+            alert('Ya se han realizado 3 predicciones. Descargue el informe o reinicie para hacer nuevas predicciones.');
+            return;
+        }
+
+        const formData = {
+            año_inicio: parseInt(document.getElementById('año_inicio').value),
+            año_fin: parseInt(document.getElementById('año_fin').value),
+            opcion: document.getElementById('opcion').value
+        };
+
         fetch('/obtener_estudiantes')
             .then(response => response.json())
             .then(data => {
-                const estudiantes_inicial = data.total;
-
-                // Luego, enviamos todos los datos para el cálculo
-                const formData = {
-                    estudiantes_inicial: estudiantes_inicial,
-                    año_inicio: parseInt(document.getElementById('año_inicio').value),
-                    año_fin: parseInt(document.getElementById('año_fin').value),
-                    opcion: document.getElementById('opcion').value
-                };
-
+                formData.estudiantes_inicial = data.total;
                 return fetch('/calculate_rungeKutta', {
                     method: 'POST',
                     headers: {
@@ -29,36 +40,156 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(response => response.json())
             .then(data => {
-                generateChart(data);
+                predicciones.push(data);
+                if (currentChart) {
+                    currentChart.destroy();
+                }
+                currentChart = generateChart(data);
+
+                // Guardar la imagen de la gráfica
+                const canvas = document.getElementById('myChart');
+                const imageData = canvas.toDataURL('image/png');
+                graficas.push(imageData);
+
                 downloadReportBtn.style.display = 'block';
-                downloadReportBtn.addEventListener('click', function () {
-                    generateAndDownloadReport(data);
-                });
+                newPredictionBtn.style.display = 'block';
+
+                if (predicciones.length === 3) {
+                    rungeKuttaForm.style.display = 'none';
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
+                alert('Hubo un error al procesar la solicitud. Por favor, inténtelo de nuevo.');
             });
-    });
+    }
+
+    function handleNewPrediction() {
+        if (predicciones.length < 3) {
+            rungeKuttaForm.reset();
+            if (currentChart) {
+                currentChart.destroy();
+                currentChart = null;
+            }
+            const canvas = document.getElementById('myChart');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        } else {
+            alert('Ya se han realizado 3 predicciones. Descargue el informe o reinicie para hacer nuevas predicciones.');
+        }
+    }
 });
 
-function generateChart(data) {
-    const ctx = document.getElementById('myChart').getContext('2d');
+function generateAndDownloadReport() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.text('Informe de Simulaciones Runge-Kutta', 105, 15, null, null, 'center');
+
+    predicciones.forEach((data, index) => {
+        let y = 25;
+
+        if (index > 0) {
+            doc.addPage();
+        }
+
+        doc.setFontSize(14);
+        doc.text(`Predicción ${index + 1}`, 10, y);
+        y += 10;
+
+        const ciclos = generateCycleLabels(data.años);
+        const estudiantesPorCiclo = data.estudiantes.filter((_, i) => i % 2 !== 0);
+
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+
+        for (let i = 1; i < data.estudiantes.length; i += 2) {
+            const año = data.años[0] + Math.floor((i - 1) / 4);
+            const ciclo = (i - 1) % 4 >= 2 ? 2 : 1;
+
+            const inicio_ciclo = data.estudiantes[i - 1];
+            const ingresados = data.nuevos_ingresos[Math.floor(i / 2)];
+            const desertados = data.desertores[Math.floor(i / 2)];
+            const fin_ciclo = data.estudiantes[i + 1];
+
+            const tableData = [
+                ['Inicio del Período', formatNumber(inicio_ciclo)],
+                ['Nuevos Ingresos', formatNumber(ingresados)],
+                ['Desertores', formatNumber(desertados)],
+                ['Fin del Período', formatNumber(fin_ciclo)]
+            ];
+
+            doc.setFontSize(11);
+            doc.text(`El ciclo ${ciclo} del año ${año} tiene los siguientes resultados: `, 10, y);
+            y += 7;
+
+            doc.autoTable({
+                startY: y,
+                head: [['Concepto', 'Valor']],
+                body: tableData,
+                theme: 'grid',
+                styles: { cellPadding: 2, fontSize: 10 },
+            });
+
+            y = doc.lastAutoTable.finalY + 10;
+        }
+
+        doc.autoTable({
+            startY: y,
+            head: [['Ciclo', 'Número de Estudiantes', 'Nuevos Ingresos', 'Desertores']],
+            body: ciclos.map((ciclo, i) => [
+                ciclo,
+                formatNumber(estudiantesPorCiclo[i]),
+                formatNumber(data.nuevos_ingresos[i]),
+                formatNumber(data.desertores[i])
+            ]),
+        });
+
+        y = doc.lastAutoTable.finalY + 10;
+
+        // Añadir la gráfica guardada correspondiente a esta predicción
+        doc.addImage(graficas[index], 'PNG', 10, y, 190, 100);
+    });
+
+    doc.save('multiple_runge_kutta_report.pdf');
+
+    // Reiniciar todo después de descargar el informe
+    predicciones = [];
+    graficas = [];
+    if (currentChart) {
+        currentChart.destroy();
+        currentChart = null;
+    }
+    downloadReportBtn.style.display = 'none';
+    newPredictionBtn.style.display = 'none';
+    rungeKuttaForm.style.display = 'block';
+    rungeKuttaForm.reset();
+
+    const canvas = document.getElementById('myChart');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function generateChart(data, canvas = null) {
+    const ctx = canvas ? canvas.getContext('2d') : document.getElementById('myChart').getContext('2d');
+
+    // Limpiar el canvas antes de dibujar una nueva gráfica
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     const ciclos = generateCycleLabels(data.años);
 
-    // Calculamos todos los puntos para cada etapa del ciclo
-    const allPoints = [];
-    for (let i = 0; i < data.estudiantes.length; i += 2) {
-        const inicioPeríodo = data.estudiantes[i];
-        const despuésIngresos = inicioPeríodo + data.nuevos_ingresos[i/2];
-        const despuésDeserciones = despuésIngresos - data.desertores[i/2];
-        const finPeríodo = despuésDeserciones; // Este es el valor correcto para fin del período
-
-        allPoints.push(inicioPeríodo);
-        allPoints.push(despuésIngresos);
-        allPoints.push(despuésDeserciones);
-        allPoints.push(finPeríodo);
-    }
+    const allPoints = data.estudiantes.flatMap((estudiante, i) => {
+        if (i % 2 === 0) {
+            const inicioPeríodo = estudiante;
+            const despuésIngresos = inicioPeríodo + data.nuevos_ingresos[i / 2];
+            const despuésDeserciones = despuésIngresos - data.desertores[i / 2];
+            const finPeríodo = data.estudiantes[i + 1];
+            return [inicioPeríodo, despuésIngresos, despuésDeserciones, finPeríodo];
+        }
+        return [];
+    });
 
     const chartData = {
         labels: ciclos.flatMap(ciclo => [
@@ -109,7 +240,7 @@ function generateChart(data) {
             },
             tooltip: {
                 callbacks: {
-                    label: function(context) {
+                    label: function (context) {
                         let label = context.dataset.label || '';
                         if (label) {
                             label += ': ';
@@ -124,152 +255,15 @@ function generateChart(data) {
         }
     };
 
-    const myChart = new Chart(ctx, {
+    return new Chart(ctx, {
         type: 'line',
         data: chartData,
         options: chartOptions
     });
-
-    // Añadir etiquetas de datos
-    myChart.options.plugins.annotation = {
-        annotations: allPoints.map((value, index) => ({
-            type: 'label',
-            xValue: index,
-            yValue: value,
-            content: value.toString(),
-            position: 'top'
-        }))
-    };
-
-    myChart.update();
 }
+
 function generateCycleLabels(años) {
     return años.flatMap(año => [`${año}-1`, `${año}-2`]);
-}
-
-function generateAndDownloadReport(data) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    const ciclos = generateCycleLabels(data.años);
-    const estudiantesPorCiclo = data.estudiantes.filter((_, index) => index % 2 !== 0);
-    doc.setFont('Helvetica','bold');
-    var text = 'Informe de Simulación Runge-Kutta';
-    var pageWidth = doc.internal.pageSize.getWidth();
-    var textWidth = doc.getStringUnitWidth(text) * doc.internal.getFontSize() / doc.internal.scaleFactor;
-    var textX = (pageWidth - textWidth) / 2;
-
-    doc.setFontSize(18);
-    doc.text(text, textX, 15);
-   
-    doc.setFontSize(15);
-    doc.text('Resultados', 10, 25);
-
-    doc.setFont('helvetica', 'normal');
-
-    let x = 35;
-    for (let i = 1; i < data.estudiantes.length; i += 2) {
-        const año = data.años[0] + Math.floor((i - 1) / 4);
-        const ciclo = (i - 1) % 4 >= 2 ? 2 : 1;
-
-        const inicio_ciclo = data.estudiantes[i - 1];
-        const ingresados = data.nuevos_ingresos[Math.floor(i / 2)];
-        const desertados = data.desertores[Math.floor(i / 2)];
-        const fin_ciclo = data.estudiantes[i + 1];
-
-        const tableData = [
-            ['Inicio del Período', formatNumber(inicio_ciclo)],
-            ['Nuevos Ingresos', formatNumber(ingresados)],
-            ['Desertores', formatNumber(desertados)],
-            ['Fin del Período', formatNumber(fin_ciclo)]
-        ];
-
-        doc.setFontSize(13);
-        doc.text(`El ciclo ${ciclo} del año ${año} tiene los siguientes resultados: `, 10, x);
-        x += 10;
-        
-        doc.autoTable({
-            startY: x,
-            head: [['Concepto', 'Valor']],
-            body: tableData,
-            theme: 'grid',
-            styles: { cellPadding: 2, fontSize: 12 },
-        });
-
-        x = doc.lastAutoTable.finalY + 10; // Actualiza la posición y para la próxima tabla
-    }
-    
-    doc.autoTable({
-        startY: x,
-        head: [['Ciclo', 'Número de Estudiantes', 'Nuevos Ingresos', 'Desertores']],
-        body: ciclos.map((ciclo, index) => [
-            ciclo,
-            formatNumber(estudiantesPorCiclo[index]),
-            formatNumber(data.nuevos_ingresos[index]),
-            formatNumber(data.desertores[index])
-        ]),
-    });
-
-    x = doc.lastAutoTable.finalY + 10;
-    doc.text('Gráfico de Resultados', 10, x);
-    x += 10;
-
-    // Calculamos todos los puntos para cada etapa del ciclo
-    const allPoints = [];
-    for (let i = 0; i < data.estudiantes.length; i += 2) {
-        const inicioPeríodo = data.estudiantes[i];
-        const despuésIngresos = inicioPeríodo + data.nuevos_ingresos[i/2];
-        const despuésDeserciones = despuésIngresos - data.desertores[i/2];
-        const finPeríodo = despuésDeserciones; // Este es el valor correcto para fin del período
-
-        allPoints.push(inicioPeríodo);
-        allPoints.push(despuésIngresos);
-        allPoints.push(despuésDeserciones);
-        allPoints.push(finPeríodo);
-    }
-
-    const chartData = {
-        labels: ciclos.flatMap(ciclo => [
-            ciclo + ' Inicio',
-            ciclo + ' Ingresos',
-            ciclo + ' Desertores',
-            ciclo + ' Fin'
-        ]),
-        datasets: [{
-            label: 'Número de Estudiantes',
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1,
-            data: allPoints,
-            pointRadius: 5,
-            pointHoverRadius: 7
-        }]
-    };
-
-    
-    const canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 400;
-    const ctx = canvas.getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: chartData,
-        options: {
-            responsive: false,
-            maintainAspectRatio: false,
-            scales: {
-                x: { display: true },
-                y: { display: true }
-            }
-        }
-    });
-
-    setTimeout(() => {
-        const imgData = canvas.toDataURL('image/png');
-        doc.addImage(imgData, 'PNG', 10, x, 180, 80);
-
-        doc.save('runge_kutta_report.pdf');
-    }, 1000);
 }
 
 function formatNumber(num) {
