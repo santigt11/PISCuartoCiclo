@@ -1,5 +1,4 @@
 let predicciones = [];
-let graficas = [];
 let currentChart = null;
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -46,11 +45,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 currentChart = generateChart(data);
 
-                // Guardar la imagen de la gráfica
-                const canvas = document.getElementById('myChart');
-                const imageData = canvas.toDataURL('image/png');
-                graficas.push(imageData);
-
                 downloadReportBtn.style.display = 'block';
                 newPredictionBtn.style.display = 'block';
 
@@ -88,11 +82,14 @@ function generateAndDownloadReport() {
     doc.setFontSize(18);
     doc.text('Informe de Simulaciones Runge-Kutta', 105, 15, null, null, 'center');
 
+    let currentPage = 1;
+
     predicciones.forEach((data, index) => {
         let y = 25;
 
         if (index > 0) {
             doc.addPage();
+            currentPage++;
         }
 
         doc.setFontSize(14);
@@ -149,65 +146,72 @@ function generateAndDownloadReport() {
 
         y = doc.lastAutoTable.finalY + 10;
 
-        // Añadir la gráfica guardada correspondiente a esta predicción
-        doc.addImage(graficas[index], 'PNG', 10, y, 190, 100);
+        // Generar la gráfica para el PDF
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 400;
+        const ctx = canvas.getContext('2d');
+
+        const chartData = createChartData(data);
+
+        new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: true },
+                    y: { display: true }
+                }
+            }
+        });
+
+        // Usar setTimeout para asegurarse de que la gráfica se ha renderizado completamente
+        setTimeout(() => {
+            const imgData = canvas.toDataURL('image/png');
+
+            // Verificar si hay espacio suficiente en la página actual
+            if (y + 80 > doc.internal.pageSize.height - 20) {
+                doc.addPage();
+                currentPage++;
+                y = 20;
+            }
+
+            doc.addImage(imgData, 'PNG', 10, y, 180, 80);
+
+            // Si no es la última predicción, añadir una nueva página
+            if (index < predicciones.length - 1) {
+                doc.addPage();
+                currentPage++;
+            } else {
+                // Si es la última predicción, guardar el PDF
+                doc.save('multiple_runge_kutta_report.pdf');
+
+                // Reiniciar todo después de descargar el informe
+                predicciones = [];
+                if (currentChart) {
+                    currentChart.destroy();
+                    currentChart = null;
+                }
+                downloadReportBtn.style.display = 'none';
+                newPredictionBtn.style.display = 'none';
+                rungeKuttaForm.style.display = 'block';
+                rungeKuttaForm.reset();
+
+                const mainCanvas = document.getElementById('myChart');
+                const mainCtx = mainCanvas.getContext('2d');
+                mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+            }
+        }, 1000);
     });
-
-    doc.save('multiple_runge_kutta_report.pdf');
-
-    // Reiniciar todo después de descargar el informe
-    predicciones = [];
-    graficas = [];
-    if (currentChart) {
-        currentChart.destroy();
-        currentChart = null;
-    }
-    downloadReportBtn.style.display = 'none';
-    newPredictionBtn.style.display = 'none';
-    rungeKuttaForm.style.display = 'block';
-    rungeKuttaForm.reset();
-
-    const canvas = document.getElementById('myChart');
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-function generateChart(data, canvas = null) {
-    const ctx = canvas ? canvas.getContext('2d') : document.getElementById('myChart').getContext('2d');
-
-    // Limpiar el canvas antes de dibujar una nueva gráfica
+function generateChart(data) {
+    const ctx = document.getElementById('myChart').getContext('2d');
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-    const ciclos = generateCycleLabels(data.años);
-
-    const allPoints = data.estudiantes.flatMap((estudiante, i) => {
-        if (i % 2 === 0) {
-            const inicioPeríodo = estudiante;
-            const despuésIngresos = inicioPeríodo + data.nuevos_ingresos[i / 2];
-            const despuésDeserciones = despuésIngresos - data.desertores[i / 2];
-            const finPeríodo = data.estudiantes[i + 1];
-            return [inicioPeríodo, despuésIngresos, despuésDeserciones, finPeríodo];
-        }
-        return [];
-    });
-
-    const chartData = {
-        labels: ciclos.flatMap(ciclo => [
-            ciclo + ' Inicio',
-            ciclo + ' Ingresos',
-            ciclo + ' Desertores',
-            ciclo + ' Fin'
-        ]),
-        datasets: [{
-            label: 'Número de Estudiantes',
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1,
-            data: allPoints,
-            pointRadius: 5,
-            pointHoverRadius: 7
-        }]
-    };
+    const chartData = createChartData(data);
 
     const chartOptions = {
         responsive: true,
@@ -260,6 +264,38 @@ function generateChart(data, canvas = null) {
         data: chartData,
         options: chartOptions
     });
+}
+
+function createChartData(data) {
+    const ciclos = generateCycleLabels(data.años);
+    const allPoints = data.estudiantes.flatMap((estudiante, i) => {
+        if (i % 2 === 0) {
+            const inicioPeríodo = estudiante;
+            const despuésIngresos = inicioPeríodo + data.nuevos_ingresos[i / 2];
+            const despuésDeserciones = despuésIngresos - data.desertores[i / 2];
+            const finPeríodo = data.estudiantes[i + 1];
+            return [inicioPeríodo, despuésIngresos, despuésDeserciones, finPeríodo];
+        }
+        return [];
+    });
+
+    return {
+        labels: ciclos.flatMap(ciclo => [
+            ciclo + ' Inicio',
+            ciclo + ' Ingresos',
+            ciclo + ' Desertores',
+            ciclo + ' Fin'
+        ]),
+        datasets: [{
+            label: 'Número de Estudiantes',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1,
+            data: allPoints,
+            pointRadius: 5,
+            pointHoverRadius: 7
+        }]
+    };
 }
 
 function generateCycleLabels(años) {
