@@ -2,9 +2,8 @@ import time
 
 import numpy as np
 from flask import Flask, render_template, request, redirect, url_for, jsonify
-from flask import Flask, render_template, request, redirect, url_for
 
-from RungeKuttaSimulator import RungeKuttaSimulator
+from RungeKuttaPrediccion import RungeKuttaPrediccion
 from configBD import *
 
 app = Flask(__name__)
