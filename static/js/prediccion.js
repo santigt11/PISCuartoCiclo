@@ -5,11 +5,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const rungeKuttaForm = document.getElementById('rungeKuttaForm');
     const downloadReportBtn = document.getElementById('downloadReportBtn');
     const newPredictionBtn = document.getElementById('newPredictionBtn');
+    const downloadChartsBtn = document.getElementById('downloadChartsBtn');
     const graphContainer = document.getElementById('graph-container');
 
     rungeKuttaForm.addEventListener('submit', handleFormSubmit);
     downloadReportBtn.addEventListener('click', generateAndDownloadReport);
     newPredictionBtn.addEventListener('click', handleNewPrediction);
+    downloadChartsBtn.addEventListener('click', generateAndDownloadChartsReport);
 
     function handleFormSubmit(event) {
         event.preventDefault();
@@ -47,6 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 downloadReportBtn.style.display = 'block';
                 newPredictionBtn.style.display = 'block';
+                downloadChartsBtn.style.display = 'block';
 
                 if (predicciones.length === 3) {
                     rungeKuttaForm.style.display = 'none';
@@ -191,12 +194,89 @@ function resetAfterDownload() {
     }
     downloadReportBtn.style.display = 'none';
     newPredictionBtn.style.display = 'none';
+    downloadChartsBtn.style.display = 'none';
     rungeKuttaForm.style.display = 'block';
     rungeKuttaForm.reset();
 
     const mainCanvas = document.getElementById('myChart');
     const mainCtx = mainCanvas.getContext('2d');
     mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+}
+
+function generateAndDownloadChartsReport() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: [200, 200]
+    });
+
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.text('Informe de Gráficas de Simulaciones Runge-Kutta', 105, 15, null, null, 'center');
+
+    let currentPage = 1;
+    let processedPredictions = 0;
+
+    function processPredictionChart(index) {
+        if (index >= predicciones.length) {
+            doc.save('runge_kutta_charts_report.pdf');
+            return;
+        }
+
+        const data = predicciones[index];
+        let y = 25;
+
+        if (index > 0) {
+            doc.addPage();
+            currentPage++;
+        }
+
+        doc.setFontSize(14);
+        doc.text(`Gráfica de Predicción ${index + 1}`, 10, y);
+        y += 10;
+
+        // Generar la gráfica para el PDF
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 400;
+        const ctx = canvas.getContext('2d');
+
+        const chartData = createChartData(data);
+
+        new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: true },
+                    y: { display: true }
+                }
+            }
+        });
+
+        // Usar setTimeout para asegurarse de que la gráfica se ha renderizado completamente
+        setTimeout(() => {
+            const imgData = canvas.toDataURL('image/png');
+
+            // Verificar si hay espacio suficiente en la página actual
+            if (y + 80 > doc.internal.pageSize.height - 20) {
+                doc.addPage();
+                currentPage++;
+                y = 20;
+            }
+
+            doc.addImage(imgData, 'PNG', 10, y, 180, 80);
+
+            // Procesar la siguiente predicción
+            processPredictionChart(index + 1);
+        }, 1000);
+    }
+
+    // Iniciar el proceso con la primera predicción
+    processPredictionChart(0);
 }
 
 function generateChart(data) {
