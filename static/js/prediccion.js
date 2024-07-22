@@ -11,7 +11,8 @@ document.addEventListener('DOMContentLoaded', function () {
             año_inicio: parseInt(document.getElementById('año_inicio').value),
             año_fin: parseInt(document.getElementById('año_fin').value),
             opcion: document.getElementById('opcion').value,
-            factor: document.getElementById('factor').value
+            factor: document.getElementById('factor').value,
+            visualizacion: document.getElementById('visualizar').value
         };
 
         fetch('/calculate_rungeKutta', {
@@ -37,21 +38,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function generateChart(data) {
     const ctx = document.getElementById('myChart').getContext('2d');
-
+    const visualizacion = document.getElementById('visualizar').value;
     const ciclos = generateCycleLabels(data.años);
-
+    if (visualizacion === 'unificada') {
     // Calculamos todos los puntos para cada etapa del ciclo
     const allPoints = [];
+    const ingresosDeserciones = [];
     for (let i = 0; i < data.estudiantes.length; i += 2) {
         const inicioPeríodo = data.estudiantes[i];
         const despuésIngresos = inicioPeríodo + data.nuevos_ingresos[i/2];
         const despuésDeserciones = despuésIngresos - data.desertores[i/2];
-        const finPeríodo = despuésDeserciones; // Este es el valor correcto para fin del período
+        const finPeríodo = despuésDeserciones;
 
         allPoints.push(inicioPeríodo);
         allPoints.push(despuésIngresos);
         allPoints.push(despuésDeserciones);
         allPoints.push(finPeríodo);
+
+        ingresosDeserciones.push(null);
+        ingresosDeserciones.push({ingresos: data.nuevos_ingresos[i/2]});
+        ingresosDeserciones.push({deserciones: data.desertores[i/2]});
+        ingresosDeserciones.push(null);
     }
 
     const chartData = {
@@ -61,15 +68,37 @@ function generateChart(data) {
             ciclo + ' Desertores',
             ciclo + ' Fin'
         ]),
-        datasets: [{
-            label: 'Número de Estudiantes',
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1,
-            data: allPoints,
-            pointRadius: 5,
-            pointHoverRadius: 7
-        }]
+        datasets: [
+            {
+                label: 'Número de Estudiantes',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                data: allPoints,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                tension: 0.4 // Esto suaviza la línea
+            },
+            {
+                label: 'Ingresos y Deserciones',
+                data: ingresosDeserciones,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                showLine: false, // Esto evita que se dibuje una línea entre los puntos
+                pointBackgroundColor: function(context) {
+                    const value = context.dataset.data[context.dataIndex];
+                    if (value && value.ingresos) return 'rgba(75, 192, 192, 1)';
+                    if (value && value.deserciones) return 'rgba(255, 99, 132, 1)';
+                    return 'rgba(0, 0, 0, 0)'; // Puntos transparentes para los valores nulos
+                },
+                pointBorderColor: function(context) {
+                    const value = context.dataset.data[context.dataIndex];
+                    if (value && value.ingresos) return 'rgba(75, 192, 192, 1)';
+                    if (value && value.deserciones) return 'rgba(255, 99, 132, 1)';
+                    return 'rgba(0, 0, 0, 0)'; // Puntos transparentes para los valores nulos
+                }
+            }
+        ]
     };
 
     const chartOptions = {
@@ -104,6 +133,163 @@ function generateChart(data) {
             tooltip: {
                 callbacks: {
                     label: function(context) {
+                        const value = context.raw;
+                        if (value && value.ingresos) {
+                            return 'Nuevos Ingresos: +' + new Intl.NumberFormat('es-PE').format(value.ingresos);
+                        }
+                        if (value && value.deserciones) {
+                            return 'Deserciones: -' + new Intl.NumberFormat('es-PE').format(value.deserciones);
+                        }
+                        return context.dataset.label + ': ' + new Intl.NumberFormat('es-PE').format(context.parsed.y);
+                    }
+                }
+            }
+        }
+    };
+
+    const myChart = new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: chartOptions
+    });
+
+    // Añadir etiquetas de datos
+    myChart.options.plugins.annotation = {
+        annotations: [
+            ...allPoints.map((value, index) => ({
+                type: 'label',
+                xValue: index,
+                yValue: value,
+                content: value.toString(),
+                position: 'top'
+            })),
+            ...ingresosDeserciones.map((value, index) => {
+                if (value && value.ingresos) {
+                    return {
+                        type: 'label',
+                        xValue: index,
+                        yValue: value.ingresos,
+                        content: '+' + value.ingresos.toString(),
+                        position: 'top',
+                        color: 'rgba(75, 192, 192, 1)'
+                    };
+                }
+                if (value && value.deserciones) {
+                    return {
+                        type: 'label',
+                        xValue: index,
+                        yValue: value.deserciones,
+                        content: '-' + value.deserciones.toString(),
+                        position: 'bottom',
+                        color: 'rgba(255, 99, 132, 1)'
+                    };
+                }
+            }).filter(Boolean)
+        ]
+    };
+
+    myChart.update();
+
+    }else {
+    // Separate visualization
+    const estudiantes = data.estudiantes.filter((_, index) => index % 2 !== 0);
+    const nuevosIngresos = data.nuevos_ingresos;
+    const desertores = data.desertores;
+
+    const chartData = {
+        labels: ciclos,
+        datasets: [
+            {
+                label: 'Estudiantes',
+                data: estudiantes,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                yAxisID: 'y-axis-1',
+                pointRadius: 5,
+                pointHoverRadius: 7
+            },
+            {
+                label: 'Nuevos Ingresos',
+                data: nuevosIngresos,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgb(140,225,125)',
+                borderWidth: 2,
+                yAxisID: 'y-axis-2',
+                pointStyle: 'rect',
+                pointRadius: 5,
+                pointHoverRadius: 7
+            },
+            {
+                label: 'Desertores',
+                data: desertores,
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 2,
+                yAxisID: 'y-axis-2',
+                pointStyle: 'triangle',
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }
+        ]
+    };
+
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: 'Ciclo'
+                }
+            },
+            'y-axis-1': {
+                type: 'linear',
+                position: 'left',
+                title: {
+                    display: true,
+                    text: 'Número de Estudiantes',
+                    color: 'rgba(54, 162, 235, 1)'
+                },
+                ticks: {
+                    color: 'rgba(54, 162, 235, 1)'
+                },
+                grid: {
+                    drawOnChartArea: false
+                }
+            },
+            'y-axis-2': {
+                type: 'linear',
+                position: 'right',
+                title: {
+                    display: true,
+                    text: 'Nuevos Ingresos / Desertores',
+                    color: 'rgb(140,225,125)'
+                },
+                ticks: {
+                    color: 'rgb(140,225,125)'
+                },
+                grid: {
+                    drawOnChartArea: false
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top'
+            },
+            title: {
+                display: true,
+                text: `Simulación de Estudiantes, Nuevos Ingresos y Desertores (${data.años[0]}-${data.años[data.años.length - 1]})`,
+                font: {
+                    size: 16
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
                         let label = context.dataset.label || '';
                         if (label) {
                             label += ': ';
@@ -124,18 +310,40 @@ function generateChart(data) {
         options: chartOptions
     });
 
-    // Añadir etiquetas de datos
+    // Add data labels
     myChart.options.plugins.annotation = {
-        annotations: allPoints.map((value, index) => ({
-            type: 'label',
-            xValue: index,
-            yValue: value,
-            content: value.toString(),
-            position: 'top'
-        }))
+        annotations: [
+            ...estudiantes.map((value, index) => ({
+                type: 'label',
+                xValue: index,
+                yValue: value,
+                yScaleID: 'y-axis-1',
+                content: value.toString(),
+                position: 'top'
+            })),
+            ...nuevosIngresos.map((value, index) => ({
+                type: 'label',
+                xValue: index,
+                yValue: value,
+                yScaleID: 'y-axis-2',
+                content: '+' + value.toString(),
+                position: 'top',
+                color: 'green'
+            })),
+            ...desertores.map((value, index) => ({
+                type: 'label',
+                xValue: index,
+                yValue: value,
+                yScaleID: 'y-axis-2',
+                content: '-' + value.toString(),
+                position: 'bottom',
+                color: 'red'
+            }))
+        ]
     };
 
     myChart.update();
+}
 }
 function generateCycleLabels(años) {
     return años.flatMap(año => [`${año}-1`, `${año}-2`]);
