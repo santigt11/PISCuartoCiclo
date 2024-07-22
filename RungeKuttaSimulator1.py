@@ -16,7 +16,7 @@ class RungeKuttaSimulator1:
             if factor == "economico":
                 epsilon1=0.15
                 while t < t_final:
-                    desertores_lista.append(int(reprobados * (1 - beta1)* (1-epsilon1)))
+                    desertores_lista.append(int(reprobados * (1 - beta1+epsilon1)))
                     k1 = h * (-alpha1 * reprobados)
                     k2 = h * (-alpha1 * (reprobados + k1 / 2))
                     k3 = h * (-alpha1 * (reprobados + k2 / 2))
@@ -25,9 +25,9 @@ class RungeKuttaSimulator1:
                     reprobados = reprobados + (k1 + 2 * k2 + 2 * k3 + k4) / 6
                     t = t + h
             elif factor== "psicologico":
-                epsilon1= 0.18
+                epsilon1= 0.16
                 while t < t_final:
-                    desertores_lista.append(int(reprobados * (1 - beta1)*(1-epsilon1)))
+                    desertores_lista.append(int(reprobados * (1 - beta1+epsilon1)))
                     k1 = h * (-alpha1 * reprobados)
                     k2 = h * (-alpha1 * (reprobados + k1 / 2))
                     k3 = h * (-alpha1 * (reprobados + k2 / 2))
@@ -83,9 +83,9 @@ class RungeKuttaSimulator1:
         else:
             alpha1, beta1 = self.alpha, self.beta
             if factor== "economico":
-                epsilon1=0.30
+                epsilon1,alpha1=0.10,0.20
                 while t < t_final:
-                    desertores_lista.append(int(reprobados * (1 - beta1)*(1-epsilon1)))
+                    desertores_lista.append(int(reprobados * (1 - beta1+epsilon1)))
                     k1 = h * (-alpha1 * reprobados)
                     k2 = h * (-alpha1 * (reprobados + k1 / 2))
                     k3 = h * (-alpha1 * (reprobados + k2 / 2))
@@ -93,9 +93,9 @@ class RungeKuttaSimulator1:
                     reprobados = reprobados + (k1 + 2 * k2 + 2 * k3 + k4) / 6
                     t = t + h
             elif factor== 'psicologico':
-                epsilon1 = 0.30
+                epsilon1,alpha1= 0.15,0.50
                 while t < t_final:
-                    desertores_lista.append(int(reprobados * (1 - beta1) * (1 - epsilon1)))
+                    desertores_lista.append(int(reprobados * (1 - beta1+epsilon1)))
                     k1 = h * (-alpha1 * reprobados)
                     k2 = h * (-alpha1 * (reprobados + k1 / 2))
                     k3 = h * (-alpha1 * (reprobados + k2 / 2))
@@ -161,15 +161,15 @@ class RungeKuttaSimulator1:
                     if factor == "economico":
                         gamma1 = 0.095
                     elif factor == "psicologico":
-                        gamma1 = 0.049
+                        gamma1 = 0.095
                     elif factor == "ninguno":
                         gamma1 = 0.095
                 elif opcion == "mujeres":
                     gamma1 = 0.049
                     if factor == "economico":
-                        gamma1 = 0.032
+                        gamma1 = 0.035
                     elif factor == "psicologico":
-                        gamma1 = 0.047
+                        gamma1 = 0.049
                     elif factor == "ninguno":
                         gamma1 = 0.049
                 else:
