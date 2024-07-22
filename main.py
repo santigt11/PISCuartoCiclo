@@ -3,9 +3,7 @@ import time
 import numpy as np
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask import Flask, render_template, request, redirect, url_for
-
-from PISCuartoCiclo.RungeKuttaSimulator import RungeKuttaSimulator
-from PISCuartoCiclo.RungeKuttaSimulator1 import RungeKuttaSimulator1
+from PISCuartoCiclo.RungeKuttaPrediccion import RungeKuttaPrediccion
 from configBD import *
 
 app = Flask(__name__)
@@ -68,7 +66,7 @@ def calculate_rungeKutta():
     opcion = data['opcion']
     factor= data['factor']
 
-    simulator = RungeKuttaSimulator1()
+    simulator = RungeKuttaPrediccion()
     estudiantes, nuevos_ingresos, desertores = simulator.simular_ciclos(estudiantes_inicial, año_inicio, año_fin, opcion,factor)
 
     años = list(range(año_inicio, año_fin + 1))

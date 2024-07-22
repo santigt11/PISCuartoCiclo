@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-class RungeKuttaSimulator1:
+class RungeKuttaPrediccion:
     def __init__(self):
         self.alpha = 0.24  # tasa de reprobación por ciclo
         self.beta = 0.8  # tasa de retención (1 - tasa de deserción)
