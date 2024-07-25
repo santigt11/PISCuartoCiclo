@@ -6,40 +6,41 @@
     <title>LOGIN</title>
     <link rel="icon" href="../static/img/456212.png" type="image/png">
     <link rel="stylesheet" href="../static/css/styleLogin.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
 </head>
 <body>
-    <div class="container">
-        <div class="form-content">
-            <h1 id="title">INICIO DE SESIÓN</h1>
-            <form action="/signin" method="POST">
-                <div class="input-group">
-                    <div class="input-field">
-                        <i class="fa-solid fa-envelope"></i>
-                        <input type="email" id="correo" name="correo" placeholder="CORREO">
-                    </div>
-                    <div class="input-field">
-                        <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="contrasena" name="contrasena" placeholder="CONTRASEÑA">
-                    </div>
-                    
+<header>
+    <img src="../static/img/banner.png" alt="Imagen de encabezado">
+</header>
+<div class="container">
+    <div class="form-content">
+        <h1 id="title">INICIO DE SESIÓN</h1>
+        <form action="/signin" method="POST">
+            <div class="input-group">
+                <div class="input-field">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="correo" name="correo" placeholder="CORREO">
                 </div>
-                <div class="btn-field">
-                    <button id="loginButton" type="submit">INICIO DE SESIÓN</button>
+                <div class="input-field">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="contrasena" name="contrasena" placeholder="CONTRASEÑA">
                 </div>
-                 <div id="errorContainer" class="message-container">
-                    {% if error_message %}
-                        <div class="message error-message">{{ error_message }}</div>
-                    {% endif %}
-                </div>
-               
-                <div id="attemptContainer" class="message-container"></div>
-            </form>
-        </div>
+
+            </div>
+            <div class="btn-field">
+                <button id="loginButton" type="submit">INICIO DE SESIÓN</button>
+            </div>
+            <div id="errorContainer" class="message-container">
+                {% if error_message %}
+                <div class="message error-message">{{ error_message }}</div>
+                {% endif %}
+            </div>
+            <div id="attemptContainer" class="message-container"></div>
+        </form>
     </div>
-
-    <script src="../static/js/Login.js"></script>
-
-
+</div>
+<script src="../static/js/Login.js"></script>
 </body>
 </html>
