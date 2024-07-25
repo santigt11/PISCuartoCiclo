@@ -119,6 +119,7 @@ class RungeKuttaPrediccion:
     def aprobados_runge_kutta(self, total_estudiantes, t0, t_final, h, opcion):
         if opcion == "hombres":
             delta = 0.30
+            matriculados=30;
             aprobados_lista = []
             estudiantes = total_estudiantes // 2
             t = t0
