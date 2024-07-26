@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block navbar %}
+<a href="/inicio" class="nav-item nav-link">Regresar</a>
+<a href="/modificar" class="nav-item nav-link">Modificar</a>
+{% endblock %}
+
+
+{% block title %}Administrar{% endblock %}
+
+{% block titulo %}Gestión de Usuarios{% endblock %}
+
+
+{% block content %}
+
+<head>
+    <link rel="stylesheet" href="../static/css/registrarUsuario.css">
+    <form class="form-container-title">
+        <h1>Crear Nuevo Usuario</h1>
+    </form>
+
+</head>
+
+<form action="/administrar" method="POST" class="form-container">
+
+    <div class="form-group">
+        <label for="correo">Email:</label>
+        <input type="email" id="correo" name="correo" maxlength="250" required><br><br>
+    </div>
+
+    <div class="form-group">
+        <label for="clave">Contraseña:</label>
+        <input type="password" id="clave" name="clave" maxlength="10" required><br><br>
+    </div>
+
+    <div class="form-group">
+        <label for="isDocente">Es Docente:</label>
+        <input type="checkbox" id="isDocente" name="isDocente" value="1"><br><br>
+    </div>
+
+    <div class="form-group">
+        <input type="submit" value="Registrar Usuario">
+    </div>
+    
+</form>
+
+{% endblock %}

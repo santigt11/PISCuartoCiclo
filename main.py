@@ -1,14 +1,14 @@
 import time
 
 import numpy as np
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, flash, render_template, request, redirect, url_for, jsonify
 from flask import Flask, render_template, request, redirect, url_for
 
 from RungeKuttaSimulator import RungeKuttaSimulator
 from configBD import *
 
 app = Flask(__name__)
-
+app.secret_key = 'hola'
 
 # Ruta para mostrar el formulario de login
 @app.route('/')
@@ -101,6 +101,100 @@ def prediccion():
 @app.route('/contacto')
 def contacto():
     return render_template('contactDocente.html')
+
+
+
+#Administrar
+def obtener_ultimo_id():
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor()
+        cursor.execute("SELECT MAX(id_Usuario) FROM usuarios")
+        resultado = cursor.fetchone()
+        return 1 if resultado[0] is None else resultado[0] + 1
+    except mysql.connector.Error as error:
+        print(f"Error al obtener el último ID: {error}")
+        return None
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+def crear_usuario(clave, correo, isDocente):
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor()
+        nuevo_id = obtener_ultimo_id()
+        if nuevo_id is None:
+            return "Error al generar nuevo ID"
+        sql = "INSERT INTO usuarios (id_Usuario, clave, correo, isDocente) VALUES (%s, %s, %s, %s)"
+        valores = (nuevo_id, clave, correo, isDocente)
+        cursor.execute(sql, valores)
+        connection.commit()
+        return f"Usuario creado exitosamente con ID: {nuevo_id}"
+    except mysql.connector.Error as error:
+        return f"Error al crear usuario: {error}"
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+@app.route('/administrar', methods=['GET', 'POST'])
+def crearUsuario():
+    if request.method == 'POST':
+        clave = request.form['clave']
+        correo = request.form['correo']
+        isDocente = 1 if 'isDocente' in request.form else 0
+        resultado = crear_usuario(clave, correo, isDocente)
+        flash(resultado)
+        return redirect(url_for('usuarioCreado'))
+    return render_template('registrarUsuario.html')
+
+@app.route('/crear_Usuario')
+def usuarioCreado():
+    return render_template('registrarUsuario.html')
+
+#Obtengo los usuarios
+@app.route('/modificar', methods=['GET'])
+def obtenerUsuarios():
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM usuarios")
+        usuarios = cursor.fetchall()
+        return render_template('modificarUsuario.html', usuarios=usuarios)
+    except mysql.connector.Error as error:
+        print(f"Error al obtener los usuarios: {error}")
+        return "Error al obtener los usuarios"
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+            
+@app.route('/actualizar_usuario', methods=['POST'])
+def actualizarUsuario():
+    id_usuario = request.form['id_usuario']
+    clave = request.form['clave']
+    correo = request.form['correo']
+    isDocente = 1 if 'isDocente' in request.form else 0
+
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor()
+        sql = "UPDATE usuarios SET clave = %s, correo = %s, isDocente = %s WHERE id_Usuario = %s"
+        valores = (clave, correo, isDocente, id_usuario)
+        cursor.execute(sql, valores)
+        connection.commit()
+        flash("Usuario actualizado exitosamente")
+    except mysql.connector.Error as error:
+        flash(f"Error al actualizar usuario: {error}")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return redirect(url_for('obtenerUsuarios'))
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=1000)
