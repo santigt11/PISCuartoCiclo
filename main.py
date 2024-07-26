@@ -4,6 +4,7 @@ import numpy as np
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 
 from RungeKuttaPrediccion import RungeKuttaPrediccion
+from RungeKuttaPrediccion1 import RungeKuttaPrediccion1
 from configBD import *
 
 app = Flask(__name__)
@@ -79,7 +80,7 @@ def calculate_rungeKutta():
     opcion = data['opcion']
     factor= data['factor']
 
-    simulator = RungeKuttaPrediccion()
+    simulator = RungeKuttaPrediccion1()
     estudiantes, nuevos_ingresos, desertores = simulator.simular_ciclos(estudiantes_inicial, año_inicio, año_fin, opcion,factor)
 
     años = list(range(año_inicio, año_fin + 1))

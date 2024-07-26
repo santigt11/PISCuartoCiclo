@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function handleFormSubmit(event) {
         event.preventDefault();
 
-        if (predicciones.length >= 3) {
+        if (predicciones.length > 3) {
             alert('Ya se han realizado 3 predicciones. Descargue el informe o reinicie para hacer nuevas predicciones.');
             return;
         }
@@ -60,12 +60,13 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Hubo un error al procesar la solicitud. Por favor, inténtelo de nuevo.');
+                showErrorMessage('Hubo un error al procesar la solicitud. Por favor, inténtelo de nuevo.');
             });
     }
 
     function handleNewPrediction() {
-        if (predicciones.length < 3) {
+
+        if (predicciones.length < 4) {
             rungeKuttaForm.reset();
             if (currentChart) {
                 currentChart.destroy();
@@ -75,6 +76,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         } else {
+            console.error('Error:', error);
             alert('Ya se han realizado 3 predicciones. Descargue el informe o reinicie para hacer nuevas predicciones.');
         }
     }
@@ -174,9 +176,9 @@ function createChartData(data, visualizacion) {
             const inicioPeríodo = data.estudiantes[i];
             const despuésIngresos = inicioPeríodo + data.nuevos_ingresos[i/2];
             const despuésDeserciones = despuésIngresos - data.desertores[i/2];
-            const finPeríodo = despuésDeserciones;
+            //const finPeríodo = despuésDeserciones;
 
-            allPoints.push(inicioPeríodo, despuésIngresos, despuésDeserciones, finPeríodo);
+            allPoints.push(inicioPeríodo, despuésIngresos, despuésDeserciones);
             ingresosDeserciones.push(null, {ingresos: data.nuevos_ingresos[i/2]}, {deserciones: data.desertores[i/2]}, null);
         }
 
@@ -184,8 +186,7 @@ function createChartData(data, visualizacion) {
             labels: ciclos.flatMap(ciclo => [
                 ciclo + ' Inicio',
                 ciclo + ' Ingresos',
-                ciclo + ' Desertores',
-                ciclo + ' Fin'
+                ciclo + ' Desertores'
             ]),
             datasets: [
                 {
@@ -314,7 +315,6 @@ function generateAndDownloadReport() {
                 ['Inicio del Período', formatNumber(inicio_ciclo)],
                 ['Nuevos Ingresos', formatNumber(ingresados)],
                 ['Desertores', formatNumber(desertados)],
-                ['Fin del Período', formatNumber(fin_ciclo)]
             ];
 
             doc.setFontSize(11);
