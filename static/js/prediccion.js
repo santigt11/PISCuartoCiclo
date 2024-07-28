@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function handleFormSubmit(event) {
         event.preventDefault();
 
-        if (predicciones.length > 3) {
+        if (predicciones.length >= 8) {
             alert('Ya se han realizado 3 predicciones. Descargue el informe o reinicie para hacer nuevas predicciones.');
             return;
         }
@@ -47,16 +47,16 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 predicciones.push(data);
                 if (currentChart) {
-                    currentChart.destroy();
+                    //currentChart.destroy();
+                    currentChart.data = createChartData(data, document.getElementById('visualizar').value);
+                    currentChart.update();
                 }
                 currentChart = generateChart(data);
 
                 downloadReportBtn.style.display = 'block';
                 newPredictionBtn.style.display = 'block';
 
-                if (predicciones.length === 3) {
-                    rungeKuttaForm.style.display = 'none';
-                }
+
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -66,17 +66,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function handleNewPrediction() {
 
-        if (predicciones.length < 4) {
+        if (predicciones.length < 8) {
             rungeKuttaForm.reset();
-            if (currentChart) {
-                currentChart.destroy();
-                currentChart = null;
-            }
-            const canvas = document.getElementById('myChart');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            //const canvas = document.getElementById('myChart');
+            alert('La predicción actual ha sido guardada. Puede realizar una nueva predicción.');
+           //const ctx = canvas.getContext('2d');
+            //ctx.clearRect(0, 0, canvas.width, canvas.height);
+            downloadReportBtn.style.display = 'block';
+            newPredictionBtn.style.display = 'block';
         } else {
-            console.error('Error:', error);
+
             alert('Ya se han realizado 3 predicciones. Descargue el informe o reinicie para hacer nuevas predicciones.');
         }
     }
@@ -198,26 +198,8 @@ function createChartData(data, visualizacion) {
                     pointRadius: 5,
                     pointHoverRadius: 7,
                     tension: 0.4
-                },
-                {
-                    label: 'Ingresos y Deserciones',
-                    data: ingresosDeserciones,
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
-                    showLine: false,
-                    pointBackgroundColor: function(context) {
-                        const value = context.dataset.data[context.dataIndex];
-                        if (value && value.ingresos) return 'rgba(75, 192, 192, 1)';
-                        if (value && value.deserciones) return 'rgba(255, 99, 132, 1)';
-                        return 'rgba(0, 0, 0, 0)';
-                    },
-                    pointBorderColor: function(context) {
-                        const value = context.dataset.data[context.dataIndex];
-                        if (value && value.ingresos) return 'rgba(75, 192, 192, 1)';
-                        if (value && value.deserciones) return 'rgba(255, 99, 132, 1)';
-                        return 'rgba(0, 0, 0, 0)';
-                    }
                 }
+
             ]
         };
     } else {
@@ -276,13 +258,13 @@ function generateAndDownloadReport() {
 
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(18);
-    doc.text('Informe de Simulaciones Runge-Kutta', 105, 15, null, null, 'center');
+    doc.text('Informe De Predicción De Deserción Estudiantil', 105, 15, null, null, 'center');
 
     let currentPage = 1;
 
     function processPrediction(index) {
         if (index >= predicciones.length) {
-            doc.save('multiple_runge_kutta_report.pdf');
+            doc.save('Informe_Deserción.pdf');
             resetAfterDownload();
             return;
         }
