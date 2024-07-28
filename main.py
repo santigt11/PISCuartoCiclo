@@ -196,5 +196,98 @@ def actualizarUsuario():
     return redirect(url_for('obtenerUsuarios'))
 
 
+#Registrar Periodos
+def obtener_ultimo_id_periodo():
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor()
+        cursor.execute("SELECT MAX(id) FROM periodo")
+        resultado = cursor.fetchone()
+        return 1 if resultado[0] is None else resultado[0] + 1
+    except mysql.connector.Error as error:
+        print(f"Error al obtener el último ID del periodo: {error}")
+        return None
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+def crear_periodo(cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesUltimoCiclo):
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor()
+        nuevo_id = obtener_ultimo_id_periodo()
+        if nuevo_id is None:
+            return "Error al generar nuevo ID del periodo"
+        sql = "INSERT INTO periodo (id, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesUltimoCiclo) VALUES (%s, %s, %s, %s)"
+        valores = (nuevo_id, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesUltimoCiclo)
+        cursor.execute(sql, valores)
+        connection.commit()
+        return f"Periodo creado exitosamente con ID: {nuevo_id}"
+    except mysql.connector.Error as error:
+        return f"Error al crear periodo: {error}"
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+@app.route('/periodo', methods=['GET', 'POST'])
+def crearPeriodo():
+    if request.method == 'POST':
+        cantEstudiantesHombre = int(request.form['cantEstudiantesHombre'])
+        cantEstudiantesMujer = int(request.form['cantEstudiantesMujer'])
+        cantEstudiantesUltimoCiclo = int(request.form['cantEstudiantesUltimoCiclo'])
+        resultado = crear_periodo(cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesUltimoCiclo)
+        flash(resultado)
+        return redirect(url_for('periodoCreado'))
+    return render_template('registrarPeriodo.html')
+
+@app.route('/crear_Periodo')
+def periodoCreado():
+    return render_template('registrarPeriodo.html')
+
+#Obtengo los usuarios
+@app.route('/modificarPeriodo', methods=['GET'])
+def obtenerPeriodos():
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM periodo")
+        periodos = cursor.fetchall()
+        return render_template('modificarPeriodo.html', periodo=periodos)
+    except mysql.connector.Error as error:
+        print(f"Error al obtener los periodos: {error}")
+        return "Error al obtener los periodos"
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+            
+@app.route('/actualizar_periodo', methods=['POST'])
+def actualizarPeriodo():
+    id = request.form['id']
+    cantEstudiantesHombre = request.form['cantEstudiantesHombre']
+    cantEstudiantesMujer = request.form['cantEstudiantesMujer']
+    cantEstudiantesUltimoCiclo = request.form['cantEstudiantesUltimoCiclo']
+
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor()
+        sql = "UPDATE periodo SET cantEstudiantesHombre = %s, cantEstudiantesMujer = %s, cantEstudiantesUltimoCiclo = %s WHERE id = %s"
+        valores = (cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesUltimoCiclo, id)
+        cursor.execute(sql, valores)
+        connection.commit()
+        flash("Periodo actualizado exitosamente")
+    except mysql.connector.Error as error:
+        flash(f"Error al actualizar periodo: {error}")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return redirect(url_for('obtenerPeriodos'))
+
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=1000)
