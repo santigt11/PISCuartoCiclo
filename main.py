@@ -4,7 +4,6 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, f
 from flask import Flask, render_template, request, redirect, url_for
 
 from RungeKuttaPrediccion import RungeKuttaPrediccion
-
 from configBD import *
 
 app = Flask(__name__)
@@ -22,6 +21,15 @@ def login():
     usuarioCorrecto = False
     correoUsuario = None
     return render_template('login.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+
+# Cerrar Sesion
+@app.route('/signout')
+def signout():
+    global usuarioCorrecto
+    global correoUsuario
+    usuarioCorrecto = False
+    correoUsuario = None
+    return render_template('indexEstudiante.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
 @app.route('/signin', methods=['POST'])
 def signin():

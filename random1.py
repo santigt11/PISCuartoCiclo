@@ -1,4 +1,4 @@
-import random
+import random1
 def generar_numero_aleatorio(minimo=30, maximo=30):
 
     if minimo > maximo:

@@ -1,11 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from PISCuartoCiclo.random import generar_numero_aleatorio, generar_numero_aleatorio_Egresados
+from random1 import generar_numero_aleatorio, generar_numero_aleatorio_Egresados
+
+
 
 
 class RungeKuttaPrediccion:
-    def __init__(self):
+    def _init_(self):
         self.alpha = 0.14  # tasa de reprobación por ciclo
         self.beta = 0.8  # tasa de retención (1 - tasa de deserción)
         self.gamma = 0.05  # tasa de crecimiento de nuevos ingresos por ciclo
