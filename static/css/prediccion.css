@@ -11,8 +11,9 @@
 
 .graph-container {
     width: 100%;
-    max-width: 600px;
-    margin-bottom: 20px;
+    max-width: 900px;
+    height: 600px;
+    margin-bottom: 30px;
 }
 
 .report-container {

@@ -1,22 +1,32 @@
 import time
-
 import numpy as np
-from flask import Flask, flash, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask import Flask, render_template, request, redirect, url_for
 
-from RungeKuttaSimulator import RungeKuttaSimulator
+from RungeKuttaPrediccion import RungeKuttaPrediccion
 from configBD import *
 
 app = Flask(__name__)
 app.secret_key = 'hola'
 
+# Declaración de las variables globales
+usuarioCorrecto = False
+correoUsuario = None
+
 # Ruta para mostrar el formulario de login
-@app.route('/')
+@app.route('/login')
 def login():
-    return render_template('login.html')
+    global usuarioCorrecto
+    global correoUsuario
+    usuarioCorrecto = False
+    correoUsuario = None
+    return render_template('login.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
 @app.route('/signin', methods=['POST'])
 def signin():
+    global usuarioCorrecto  # Indicamos que vamos a usar la variable global
+    global correoUsuario
+
     correo = request.form.get('correo')
     contrasena = request.form.get('contrasena')
 
@@ -24,8 +34,7 @@ def signin():
     if not correo or not contrasena:
         error_message = 'Por favor, completa todos los campos.'
         time.sleep(1)  # Espera de 1 segundos antes de continuar
-
-        return render_template('login.html', error_message=error_message)
+        return render_template('login.html', error_message=error_message, usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
     # Lógica de validación (simplificada)
     conexion_MySQL = connectionBD()
@@ -39,14 +48,15 @@ def signin():
     for usuario in lista_usuarios:
         if usuario['correo'] == correo and usuario['clave'] == contrasena:
             usuarioCorrecto = True
+            correoUsuario = correo
             break
         else:
-            print ("entra a usuario correcto pero falso")
+            print("entra a usuario correcto pero falso")
     if usuarioCorrecto:
         return redirect(url_for('principal'))  # Redirige a otra vista si las credenciales son correctas
     else:
         error_message = 'Credenciales incorrectas. Intenta de nuevo.'
-        return render_template('login.html', error_message=error_message)
+        return render_template('login.html', error_message=error_message, usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
 def contarUsuarios():
     conexion_MySQL = connectionBD()
@@ -61,14 +71,13 @@ def obtener_estudiantes():
     return jsonify({'total': total_estudiantes})
 
 # Ruta para la página principal
-@app.route('/inicio')
+@app.route('/')
 def principal():
-    return render_template('indexEstudiante.html')
-
+    return render_template('indexEstudiante.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
 @app.route('/acercaDe')
 def informacion():
-    return render_template('about.html')
+    return render_template('about.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
 # Ruta para calcular los datos con el método de Euler
 @app.route('/calculate_rungeKutta', methods=['POST'])
@@ -78,9 +87,10 @@ def calculate_rungeKutta():
     año_inicio = int(data['año_inicio'])
     año_fin = int(data['año_fin'])
     opcion = data['opcion']
+    factor = data['factor']
 
-    simulator = RungeKuttaSimulator()
-    estudiantes, nuevos_ingresos, desertores = simulator.simular_ciclos(estudiantes_inicial, año_inicio, año_fin, opcion)
+    simulator = RungeKuttaPrediccion()
+    estudiantes, nuevos_ingresos, desertores = simulator.simular_ciclos(estudiantes_inicial, año_inicio, año_fin, opcion, factor)
 
     años = list(range(año_inicio, año_fin + 1))
 
@@ -96,11 +106,16 @@ def calculate_rungeKutta():
 # Ruta para la página de predicción
 @app.route('/prediccion')
 def prediccion():
-    return render_template('prediccion.html')
+    global usuarioCorrecto
+    global correoUsuario
+    if usuarioCorrecto:
+        return render_template('prediccion.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+    else:
+        return redirect(url_for('login'))
 
 @app.route('/contacto')
 def contacto():
-    return render_template('contactDocente.html')
+    return render_template('contactDocente.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
 
 

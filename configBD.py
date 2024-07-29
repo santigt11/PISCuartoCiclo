@@ -3,9 +3,9 @@ import mysql.connector
 def connectionBD():
     mydb = mysql.connector.connect(
         host="localhost",
-        user="root",
-        password="1106017716",
-        database="PIS"
+        user = "root",
+        password = "pis1809",
+        database = "PIS"
     )
 
     if mydb:
