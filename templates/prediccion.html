@@ -123,46 +123,18 @@
                     <label for="año_fin">Año Final</label>
                     <input type="number" class="form-control" id="año_fin" required>
                 </div>
-                <div class="form-group">
-                    <label for="opcion">GÉNERO</label>
-                    <select class="form-control" id="opcion" required>
-                        <option value="">Seleccione...</option>
-                        <option value="hombres">Masculino</option>
-                        <option value="mujeres">Femenino</option>
-                        <option value="general">General</option>
-                    </select>
+                <div style="display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn btn-primary" id="calcularBtn">CALCULAR</button>
+                        <button type="button" class="btn btn-success ml-3" id="downloadReportBtn" style="display: none;">DESCARGAR REPORTE</button>
+                        <button type="button" class="btn btn-primary ml-3" id="newPredictionBtn" style="display: none;">AGREGAR AL INFORME</button>
                 </div>
-                <div class="form-group">
-                    <label for="factor">FACTOR DESERCIÓN</label>
-                    <select class="form-control" id="factor" required>
-                        <option value="">Seleccione...</option>
-                        <option value="economico">Económico</option>
-                        <option value="psicologico">Psicológico</option>
-                        <option value="ninguno">Ninguno</option>
-                    </select>
+                <div id="errorContainer" class="message-container">
+                {% if error_message %}
+                <div class="message error-message">{{ error_message }}</div>
+                {% endif %}
                 </div>
-                <div class="form-group">
-                    <label for="visualizar">GRÁFICA</label>
-                    <select class="form-control" id="visualizar" required>
-                        <option value="">Seleccione...</option>
-                        <option value="unificada">Unificada</option>
-                        <option value="separada">Separada</option>
-                    </select>
-                </div>
-            </div>
-            <div id="graph-container" class="graph-report-container">
-                <canvas id="myChart" style="width: 100%; height: 400px;"></canvas>
-            </div>
-            <div style="display: flex; justify-content: flex-end;">
-                <button type="submit" class="btn btn-primary" id="calcularBtn">CALCULAR</button>
-                <button type="button" class="btn btn-success ml-3" id="downloadReportBtn" style="display: none;">
-                    DESCARGAR REPORTE
-                </button>
-                <button type="button" class="btn btn-primary ml-3" id="newPredictionBtn" style="display: none;">NUEVA
-                    PREDICCIÓN
-                </button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 <!-- Input Form End -->
