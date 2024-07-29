@@ -267,32 +267,29 @@ function generateCycleLabels(años) {
 function generateAndDownloadReport() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    doc.addImage('static/img/PortadaUnl.png', 'PNG', 0, 0, 210, 297); // A4 size
+
+    doc.addImage('static/img/PortadaUnl.png', 'PNG', 20, 20, 170, 250, 'center');
     doc.addPage();
-    doc.addImage('static/img/Encabezado.png', 'PNG', 0, 0, 210, 30);
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(18);
-    //doc.text('Informe De Predicción De Deserción Estudiantil', 105, 15, null, null, 'center');
+    doc.text('Informe De Predicción De Deserción Estudiantil', 105, 15, null, null, 'center');
 
-
-
-    let y = 50;
+    let currentPage = 1;
 
     function processPrediction(index) {
         if (index >= predicciones.length) {
             const currentDate = getCurrentDate();
             doc.save(`Informe_Deserción_${currentDate}.pdf`);
-            resetAfterDownload();
+            //resetAfterDownload();
             return;
         }
 
         const data = predicciones[index];
-        //let y = 25;
+        let y = 25;
 
         if (index > 0) {
             doc.addPage();
-            doc.addImage('static/img/Encabezado.png', 'PNG', 0, 0, 210, 30);
-            y=40;
+            currentPage++;
         }
 
         doc.setFontSize(14);
@@ -374,8 +371,7 @@ function generateAndDownloadReport() {
             // Verificar si hay espacio suficiente en la página actual
             if (y + 80 > doc.internal.pageSize.height - 20) {
                 doc.addPage();
-                 doc.addImage('static/img/Encabezado.png', 'PNG', 0, 0, 210, 30);
-                y = 40;
+                y=40;
             }
 
             doc.addImage(imgData, 'PNG', 10, y, 180, 80);
