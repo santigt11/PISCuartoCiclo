@@ -45,7 +45,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 return response.json();
             })
             .then(data => {
-                predicciones.push(data);
+                data.opcion = document.getElementById('opcion').value;
+                data.factor = document.getElementById('factor').value;
+                data.visualizacion = document.getElementById('visualizar').value;
+                data.año_inicio = parseInt(document.getElementById('año_inicio').value);
+                data.año_fin = parseInt(document.getElementById('año_fin').value);
+                predicciones.push(data);  // Solo agregar una vez
+
                 if (currentChart) {
                     //currentChart.destroy();
                     currentChart.data = createChartData(data, document.getElementById('visualizar').value);
@@ -246,6 +252,13 @@ function createChartData(data, visualizacion) {
         };
     }
 }
+function getCurrentDate() {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    return `${day}-${month}-${year}`;
+}
 
 function generateCycleLabels(años) {
     return años.flatMap(año => [`${año}-1`, `${año}-2`]);
@@ -254,27 +267,32 @@ function generateCycleLabels(años) {
 function generateAndDownloadReport() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    const visualizacion = document.getElementById('visualizar').value;
-
+    doc.addImage('static/img/PortadaUnl.png', 'PNG', 0, 0, 210, 297); // A4 size
+    doc.addPage();
+    doc.addImage('static/img/Encabezado.png', 'PNG', 0, 0, 210, 30);
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(18);
-    doc.text('Informe De Predicción De Deserción Estudiantil', 105, 15, null, null, 'center');
+    //doc.text('Informe De Predicción De Deserción Estudiantil', 105, 15, null, null, 'center');
 
-    let currentPage = 1;
+
+
+    let y = 50;
 
     function processPrediction(index) {
         if (index >= predicciones.length) {
-            doc.save('Informe_Deserción.pdf');
+            const currentDate = getCurrentDate();
+            doc.save(`Informe_Deserción_${currentDate}.pdf`);
             resetAfterDownload();
             return;
         }
 
         const data = predicciones[index];
-        let y = 25;
+        //let y = 25;
 
         if (index > 0) {
             doc.addPage();
-            currentPage++;
+            doc.addImage('static/img/Encabezado.png', 'PNG', 0, 0, 210, 30);
+            y=40;
         }
 
         doc.setFontSize(14);
@@ -284,20 +302,28 @@ function generateAndDownloadReport() {
         doc.setFontSize(12);
         doc.setFont('helvetica', 'normal');
 
-        for (let i = 1; i < data.estudiantes.length; i += 2) {
-            const año = data.años[0] + Math.floor((i - 1) / 4);
-            const ciclo = (i - 1) % 4 >= 2 ? 2 : 1;
+        // Agregar información sobre las opciones seleccionadas
+        doc.text(`Género: ${data.opcion}`, 10, y); y += 7;
+        doc.text(`Factor de deserción: ${data.factor}`, 10, y); y += 7;
+        doc.text(`Visualización: ${data.visualizacion}`, 10, y); y += 7;
+        doc.text(`Año inicio: ${data.años[0]}`, 10, y); y += 7;
+        doc.text(`Año fin: ${data.años[data.años.length - 1]}`, 10, y); y += 10;
 
+        for (let i = 1; i < data.estudiantes.length; i += 2) {
+            const año = data.años[Math.floor((i - 1) / 4)];
+            const ciclo = (i - 1) % 4 >= 2 ? 2 : 1;
             const inicio_ciclo = data.estudiantes[i - 1];
             const ingresados = data.nuevos_ingresos[Math.floor(i / 2)];
             const desertados = data.desertores[Math.floor(i / 2)];
-            const fin_ciclo = data.estudiantes[i + 1];
+            const fin_ciclo = data.estudiantes[i+1];
 
             const tableData = [
                 ['Inicio del Período', formatNumber(inicio_ciclo)],
                 ['Nuevos Ingresos', formatNumber(ingresados)],
                 ['Desertores', formatNumber(desertados)],
+                ['Fin del Período', formatNumber(fin_ciclo)]
             ];
+
 
             doc.setFontSize(11);
             doc.text(`El ciclo ${ciclo} del año ${año} tiene los siguientes resultados: `, 10, y);
@@ -312,9 +338,13 @@ function generateAndDownloadReport() {
             });
 
             y = doc.lastAutoTable.finalY + 10;
-        }
 
-        y = doc.lastAutoTable.finalY + 10;
+            if (y > doc.internal.pageSize.height - 20) {
+                doc.addPage();
+                currentPage++;
+                y = 20;
+            }
+        }
 
         // Generar la gráfica para el PDF
         const canvas = document.createElement('canvas');
@@ -322,7 +352,7 @@ function generateAndDownloadReport() {
         canvas.height = 400;
         const ctx = canvas.getContext('2d');
 
-        const chartData = createChartData(data, visualizacion);
+        const chartData = createChartData(data, data.visualizacion);
 
         new Chart(ctx, {
             type: 'line',
@@ -344,15 +374,15 @@ function generateAndDownloadReport() {
             // Verificar si hay espacio suficiente en la página actual
             if (y + 80 > doc.internal.pageSize.height - 20) {
                 doc.addPage();
-                currentPage++;
-                y = 20;
+                 doc.addImage('static/img/Encabezado.png', 'PNG', 0, 0, 210, 30);
+                y = 40;
             }
 
             doc.addImage(imgData, 'PNG', 10, y, 180, 80);
-
+             y += 90;
             // Procesar la siguiente predicción
             processPrediction(index + 1);
-        }, 1000);
+        }, 100);
     }
 
     // Iniciar el proceso con la primera predicción
