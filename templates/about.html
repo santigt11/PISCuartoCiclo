@@ -3,9 +3,11 @@
 {% block title %}Acerca de{% endblock %}
 
 {% block navbar %}
-<a href="/inicio" class="nav-item nav-link">Inicio</a>
+<a href="/" class="nav-item nav-link">Inicio</a>
 <a href="/acercaDe" class="nav-item nav-link active">Acerca de</a>
-<a href="/prediccion" class="nav-item nav-link">Servicios</a>
+{% if usuarioCorrecto %}
+    <a href="/prediccion" class="nav-item nav-link">Servicios</a>
+{% endif %}
 <a href="/contacto" class="nav-item nav-link">Contacto</a>
 {% endblock %}
 

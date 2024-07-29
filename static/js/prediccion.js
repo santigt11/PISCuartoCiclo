@@ -1,75 +1,91 @@
+let predicciones = [];
+let currentChart = null;
 
 document.addEventListener('DOMContentLoaded', function () {
     const rungeKuttaForm = document.getElementById('rungeKuttaForm');
     const downloadReportBtn = document.getElementById('downloadReportBtn');
+    const newPredictionBtn = document.getElementById('newPredictionBtn');
+    const graphContainer = document.getElementById('graph-container');
 
-    rungeKuttaForm.addEventListener('submit', function (event) {
+    rungeKuttaForm.addEventListener('submit', handleFormSubmit);
+    downloadReportBtn.addEventListener('click', generateAndDownloadReport);
+    newPredictionBtn.addEventListener('click', handleNewPrediction);
+
+    function handleFormSubmit(event) {
         event.preventDefault();
 
+        if (predicciones.length >= 3) {
+            alert('Ya se han realizado 3 predicciones. Descargue el informe o reinicie para hacer nuevas predicciones.');
+            return;
+        }
+
         const formData = {
-            estudiantes_inicial: parseInt(document.getElementById('estudiantes_inicial').value),
             año_inicio: parseInt(document.getElementById('año_inicio').value),
             año_fin: parseInt(document.getElementById('año_fin').value),
-            opcion: document.getElementById('opcion').value
+            opcion: document.getElementById('opcion').value,
+            factor: document.getElementById('factor').value
         };
 
-        fetch('/calculate_rungeKutta', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            generateChart(data);
-            downloadReportBtn.style.display = 'block';
-            downloadReportBtn.addEventListener('click', function () {
-                generateAndDownloadReport(data);
+        fetch('/obtener_estudiantes')
+            .then(response => response.json())
+            .then(data => {
+                formData.estudiantes_inicial = data.total;
+                return fetch('/calculate_rungeKutta', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                predicciones.push(data);
+                if (currentChart) {
+                    //currentChart.destroy();
+                    currentChart.data = createChartData(data, document.getElementById('visualizar').value);
+                    currentChart.update();
+                }
+                currentChart = generateChart(data);
+
+                downloadReportBtn.style.display = 'block';
+                newPredictionBtn.style.display = 'block';
+
+
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showErrorMessage('Hubo un error al procesar la solicitud. Por favor, inténtelo de nuevo.');
             });
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    });
+    }
+
+    function handleNewPrediction() {
+
+        if (predicciones.length < 3) {
+            rungeKuttaForm.reset();
+
+            //const canvas = document.getElementById('myChart');
+            alert('La predicción actual ha sido guardada. Puede realizar una nueva predicción.');
+           //const ctx = canvas.getContext('2d');
+            //ctx.clearRect(0, 0, canvas.width, canvas.height);
+            downloadReportBtn.style.display = 'block';
+            newPredictionBtn.style.display = 'block';
+        } else {
+
+            alert('Ya se han realizado 3 predicciones. Descargue el informe o reinicie para hacer nuevas predicciones.');
+        }
+    }
 });
 
 function generateChart(data) {
     const ctx = document.getElementById('myChart').getContext('2d');
-
-    const ciclos = generateCycleLabels(data.años);
-
-    // Calculamos todos los puntos para cada etapa del ciclo
-    const allPoints = [];
-    for (let i = 0; i < data.estudiantes.length; i += 2) {
-        const inicioPeríodo = data.estudiantes[i];
-        const despuésIngresos = inicioPeríodo + data.nuevos_ingresos[i/2];
-        const despuésDeserciones = despuésIngresos - data.desertores[i/2];
-        const finPeríodo = despuésDeserciones; // Este es el valor correcto para fin del período
-
-        allPoints.push(inicioPeríodo);
-        allPoints.push(despuésIngresos);
-        allPoints.push(despuésDeserciones);
-        allPoints.push(finPeríodo);
-    }
-
-    const chartData = {
-        labels: ciclos.flatMap(ciclo => [
-            ciclo + ' Inicio',
-            ciclo + ' Ingresos',
-            ciclo + ' Desertores',
-            ciclo + ' Fin'
-        ]),
-        datasets: [{
-            label: 'Número de Estudiantes',
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1,
-            data: allPoints,
-            pointRadius: 5,
-            pointHoverRadius: 7
-        }]
-    };
+    const visualizacion = document.getElementById('visualizar').value;
+    const chartData = createChartData(data, visualizacion);
 
     const chartOptions = {
         responsive: true,
@@ -78,16 +94,9 @@ function generateChart(data) {
             x: {
                 title: {
                     display: true,
-                    text: 'Ciclo'
+                    text: 'Período'
                 }
             },
-            y: {
-                title: {
-                    display: true,
-                    text: 'Número de Estudiantes'
-                },
-                beginAtZero: false
-            }
         },
         plugins: {
             legend: {
@@ -117,113 +126,253 @@ function generateChart(data) {
         }
     };
 
-    const myChart = new Chart(ctx, {
+    if (visualizacion === 'separada') {
+        chartOptions.scales['y-axis-1'] = {
+            type: 'linear',
+            position: 'left',
+            title: {
+                display: true,
+                text: 'Número de Estudiantes',
+                color: 'rgba(54, 162, 235, 1)'
+            },
+            ticks: {
+                color: 'rgba(54, 162, 235, 1)'
+            },
+            grid: {
+                drawOnChartArea: false
+            }
+        };
+        chartOptions.scales['y-axis-2'] = {
+            type: 'linear',
+            position: 'right',
+            title: {
+                display: true,
+                text: 'Nuevos Ingresos / Desertores',
+                color: 'rgb(140,225,125)'
+            },
+            ticks: {
+                color: 'rgb(140,225,125)'
+            },
+            grid: {
+                drawOnChartArea: false
+            }
+        };
+    }
+
+    return new Chart(ctx, {
         type: 'line',
         data: chartData,
         options: chartOptions
     });
-
-    // Añadir etiquetas de datos
-    myChart.options.plugins.annotation = {
-        annotations: allPoints.map((value, index) => ({
-            type: 'label',
-            xValue: index,
-            yValue: value,
-            content: value.toString(),
-            position: 'top'
-        }))
-    };
-
-    myChart.update();
 }
+
+function createChartData(data, visualizacion) {
+    const ciclos = generateCycleLabels(data.años);
+
+    if (visualizacion === 'unificada') {
+        const allPoints = [];
+        const ingresosDeserciones = [];
+        for (let i = 0; i < data.estudiantes.length; i += 2) {
+            const inicioPeríodo = data.estudiantes[i];
+            const despuésIngresos = inicioPeríodo + data.nuevos_ingresos[i/2];
+            const despuésDeserciones = despuésIngresos - data.desertores[i/2];
+            //const finPeríodo = despuésDeserciones;
+
+            allPoints.push(inicioPeríodo, despuésIngresos, despuésDeserciones);
+            ingresosDeserciones.push(null, {ingresos: data.nuevos_ingresos[i/2]}, {deserciones: data.desertores[i/2]}, null);
+        }
+
+        return {
+            labels: ciclos.flatMap(ciclo => [
+                ciclo + ' Inicio',
+                ciclo + ' Ingresos',
+                ciclo + ' Desertores'
+            ]),
+            datasets: [
+                {
+                    label: 'Número de Estudiantes',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    data: allPoints,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    tension: 0.4
+                }
+
+            ]
+        };
+    } else {
+        const estudiantes = data.estudiantes.filter((_, index) => index % 2 !== 0);
+        const nuevosIngresos = data.nuevos_ingresos;
+        const desertores = data.desertores;
+
+        return {
+            labels: ciclos,
+            datasets: [
+                {
+                    label: 'Estudiantes',
+                    data: estudiantes,
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    yAxisID: 'y-axis-1',
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                },
+                {
+                    label: 'Nuevos Ingresos',
+                    data: nuevosIngresos,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgb(140,225,125)',
+                    borderWidth: 2,
+                    yAxisID: 'y-axis-2',
+                    pointStyle: 'rect',
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                },
+                {
+                    label: 'Desertores',
+                    data: desertores,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2,
+                    yAxisID: 'y-axis-2',
+                    pointStyle: 'triangle',
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }
+            ]
+        };
+    }
+}
+
 function generateCycleLabels(años) {
     return años.flatMap(año => [`${año}-1`, `${año}-2`]);
 }
 
-function generateAndDownloadReport(data) {
+function generateAndDownloadReport() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
+    const visualizacion = document.getElementById('visualizar').value;
 
-    const ciclos = generateCycleLabels(data.años);
-    const estudiantesPorCiclo = data.estudiantes.filter((_, index) => index % 2 !== 0);
-
+    doc.setFont('Helvetica', 'bold');
     doc.setFontSize(18);
-    doc.text('Informe de Simulación Runge-Kutta', 10, 10);
-    doc.setFontSize(12);
-    doc.text('Datos de Resultado', 10, 20);
+    doc.text('Informe De Predicción De Deserción Estudiantil', 105, 15, null, null, 'center');
 
-    let y = 30;
-    doc.autoTable({
-        startY: y,
-        head: [['Ciclo', 'Número de Estudiantes', 'Nuevos Ingresos', 'Desertores']],
-        body: ciclos.map((ciclo, index) => [
-            ciclo,
-            formatNumber(estudiantesPorCiclo[index]),
-            formatNumber(data.nuevos_ingresos[index]),
-            formatNumber(data.desertores[index])
-        ]),
-    });
+    let currentPage = 1;
 
-    y = doc.lastAutoTable.finalY + 10;
-    doc.text('Gráfico de Resultados', 10, y);
-    y += 10;
+    function processPrediction(index) {
+        if (index >= predicciones.length) {
+            doc.save('Informe_Deserción.pdf');
+            resetAfterDownload();
+            return;
+        }
 
-    // Calculamos todos los puntos para cada etapa del ciclo
-    const allPoints = [];
-    for (let i = 0; i < data.estudiantes.length; i += 2) {
-        const inicioPeríodo = data.estudiantes[i];
-        const despuésIngresos = inicioPeríodo + data.nuevos_ingresos[i/2];
-        const despuésDeserciones = despuésIngresos - data.desertores[i/2];
-        const finPeríodo = despuésDeserciones; // Este es el valor correcto para fin del período
+        const data = predicciones[index];
+        let y = 25;
 
-        allPoints.push(inicioPeríodo);
-        allPoints.push(despuésIngresos);
-        allPoints.push(despuésDeserciones);
-        allPoints.push(finPeríodo);
+        if (index > 0) {
+            doc.addPage();
+            currentPage++;
+        }
+
+        doc.setFontSize(14);
+        doc.text(`Predicción ${index + 1}`, 10, y);
+        y += 10;
+
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+
+        for (let i = 1; i < data.estudiantes.length; i += 2) {
+            const año = data.años[0] + Math.floor((i - 1) / 4);
+            const ciclo = (i - 1) % 4 >= 2 ? 2 : 1;
+
+            const inicio_ciclo = data.estudiantes[i - 1];
+            const ingresados = data.nuevos_ingresos[Math.floor(i / 2)];
+            const desertados = data.desertores[Math.floor(i / 2)];
+            const fin_ciclo = data.estudiantes[i + 1];
+
+            const tableData = [
+                ['Inicio del Período', formatNumber(inicio_ciclo)],
+                ['Nuevos Ingresos', formatNumber(ingresados)],
+                ['Desertores', formatNumber(desertados)],
+            ];
+
+            doc.setFontSize(11);
+            doc.text(`El ciclo ${ciclo} del año ${año} tiene los siguientes resultados: `, 10, y);
+            y += 7;
+
+            doc.autoTable({
+                startY: y,
+                head: [['Concepto', 'Valor']],
+                body: tableData,
+                theme: 'grid',
+                styles: { cellPadding: 2, fontSize: 10 },
+            });
+
+            y = doc.lastAutoTable.finalY + 10;
+        }
+
+        y = doc.lastAutoTable.finalY + 10;
+
+        // Generar la gráfica para el PDF
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 400;
+        const ctx = canvas.getContext('2d');
+
+        const chartData = createChartData(data, visualizacion);
+
+        new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: true },
+                    y: { display: true }
+                }
+            }
+        });
+
+        // Usar setTimeout para asegurarse de que la gráfica se ha renderizado completamente
+        setTimeout(() => {
+            const imgData = canvas.toDataURL('image/png');
+
+            // Verificar si hay espacio suficiente en la página actual
+            if (y + 80 > doc.internal.pageSize.height - 20) {
+                doc.addPage();
+                currentPage++;
+                y = 20;
+            }
+
+            doc.addImage(imgData, 'PNG', 10, y, 180, 80);
+
+            // Procesar la siguiente predicción
+            processPrediction(index + 1);
+        }, 1000);
     }
 
-    const chartData = {
-        labels: ciclos.flatMap(ciclo => [
-            ciclo + ' Inicio',
-            ciclo + ' Ingresos',
-            ciclo + ' Desertores',
-            ciclo + ' Fin'
-        ]),
-        datasets: [{
-            label: 'Número de Estudiantes',
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1,
-            data: allPoints,
-            pointRadius: 5,
-            pointHoverRadius: 7
-        }]
-    };
+    // Iniciar el proceso con la primera predicción
+    processPrediction(0);
+}
 
-    
-    const canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 400;
-    const ctx = canvas.getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: chartData,
-        options: {
-            responsive: false,
-            maintainAspectRatio: false,
-            scales: {
-                x: { display: true },
-                y: { display: true }
-            }
-        }
-    });
+function resetAfterDownload() {
+    predicciones = [];
+    if (currentChart) {
+        currentChart.destroy();
+        currentChart = null;
+    }
+    document.getElementById('downloadReportBtn').style.display = 'none';
+    document.getElementById('newPredictionBtn').style.display = 'none';
+    document.getElementById('rungeKuttaForm').style.display = 'block';
+    document.getElementById('rungeKuttaForm').reset();
 
-    setTimeout(() => {
-        const imgData = canvas.toDataURL('image/png');
-        doc.addImage(imgData, 'PNG', 10, y, 180, 80);
-
-        doc.save('runge_kutta_report.pdf');
-    }, 1000);
+    const mainCanvas = document.getElementById('myChart');
+    const mainCtx = mainCanvas.getContext('2d');
+    mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
 }
 
 function formatNumber(num) {

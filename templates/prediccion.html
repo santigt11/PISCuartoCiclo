@@ -5,6 +5,8 @@
     <meta charset="utf-8">
     <title>Predicción</title>
     <link rel="icon" href="../static/img/icon-predict.ico" type="image/png">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="Free Website Template" name="keywords">
     <meta content="Free Website Template" name="description">
@@ -37,18 +39,56 @@
 <!-- Navbar Start -->
 <div class="container-fluid p-0 nav-bar">
     <nav class="navbar navbar-expand-lg bg-none navbar-dark py-3">
-        <a href="/inicio" class="navbar-brand px-lg-4 m-0">
-            <img src="../static/img/unlSPD.png" alt="Bootstrap" width="250" height="55">
+        <a href="/" class="navbar-brand px-lg-4 m-0">
+            <img src="../static/img/unlSPD.png" alt="UNL" width="250" height="55">
         </a>
-        <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+        <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
             <div class="navbar-nav ml-auto p-4">
-                <a href="/inicio" class="nav-item nav-link">Inicio</a>
+                <a href="/" class="nav-item nav-link">Inicio</a>
                 <a href="/acercaDe" class="nav-item nav-link">Acerca de</a>
                 <a href="/prediccion" class="nav-item nav-link active">Servicios</a>
                 <a href="/contacto" class="nav-item nav-link">Contacto</a>
+
+                {% if usuarioCorrecto %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown">
+                        <ion-icon name="person-circle-outline"></ion-icon>
+                        <style>
+                            ion-icon {
+                                font-size: 30px;
+                            }
+                        </style>
+                    </a>
+                    <ul class="dropdown-menu custom-dropdown-menu" style="direction: rtl; text-align: right;">
+                        <li>
+                            <a class="nav-link disabled text-end" aria-disabled="true"
+                               style="color: black; font-size: 12px;">{{ correoUsuario }}</a>
+                            <hr class="dropdown-divider" style="border-top: 1px solid #414141;">
+                        </li>
+                        <li><a class="dropdown-item" href="/login">Cerrar Sesión</a></li>
+                    </ul>
+                </li>
+
+                <style>
+                    .custom-dropdown-menu {
+                        position: absolute;
+                        right: 0;
+                        top: 0;
+                        left: auto;
+                        transform: translateY(45%);
+                        border-radius: 8px;
+                    }
+
+                    .custom-dropdown-menu .dropdown-item:hover {
+                        color: #cb7f2d;
+                    }
+                </style>
+                {% else %}
+                <a href="/login" class="btn btn-outline-warning" role="button">Iniciar Sesión</a>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -67,47 +107,64 @@
 
 <!-- Input Form Start -->
 <div class="container py-5">
-    <div class="container">
-        <div class="section-title">
-            <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">MODELO DE PREDICCIÓN DE LA
-                DESERCIÓN</h4>
-            <h1 class="display-4">INGRESE LOS PARÁMETROS</h1>
-        </div>
-        <form id="rungeKuttaForm">
-            <div class="form-row form-container">
-                <div class="form-group">
-                    <label for="estudiantes_inicial">Número Inicial de Estudiantes</label>
-                    <input type="number" class="form-control" id="estudiantes_inicial" required>
-                </div>
-                <div class="form-group">
-                    <label for="año_inicio">Año de Inicio</label>
-                    <input type="number" class="form-control" id="año_inicio" required>
-                </div>
-                <div class="form-group">
-                    <label for="año_fin">Año Final</label>
-                    <input type="number" class="form-control" id="año_fin" required>
-                </div>
-                <div class="form-group">
-                    <label for="opcion">GÉNERO</label>
-                    <select class="form-control" id="opcion" required>
-                        <option value="">Seleccione...</option>
-                        <option value="hombres">Masculino</option>
-                        <option value="mujeres">Femenino</option>
-                        <option value="general">General</option>
-                    </select>
-                </div>
+        <div class="container">
+            <div class="section-title">
+                <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">MODELO DE PREDICCIÓN DE LA DESERCIÓN</h4>
+                <h1 class="display-4">INGRESE LOS PARÁMETROS</h1>
             </div>
-            <button type="submit" class="btn btn-primary">CALCULAR</button>
-        </form>
-        <div id="graph-container" class="graph-report-container">
-            <canvas id="myChart" style="width: 100%; height: 400px;"></canvas>
+            <form id="rungeKuttaForm">
+                <div class="form-row form-container">
+                    <div class="form-group">
+                        <label for="año_inicio">Año de Inicio</label>
+                        <input type="number" class="form-control" id="año_inicio" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="año_fin">Año Final</label>
+                        <input type="number" class="form-control" id="año_fin" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="opcion">GÉNERO</label>
+                        <select class="form-control" id="opcion" required>
+                            <option value="">Seleccione...</option>
+                            <option value="hombres">Masculino</option>
+                            <option value="mujeres">Femenino</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="factor">FACTOR DESERCIÓN</label>
+                        <select class="form-control" id="factor" required>
+                            <option value="">Seleccione...</option>
+                            <option value="economico">Económico</option>
+                            <option value="psicologico">Psicológico</option>
+                            <option value="ninguno">Ninguno</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="visualizar">GRÁFICA</label>
+                        <select class="form-control" id="visualizar" required>
+                            <option value="">Seleccione...</option>
+                            <option value="unificada">Unificada</option>
+                            <option value="separada">Separada</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="graph-container" class="graph-report-container">
+                    <canvas id="myChart" style="width: 100%; height: 400px;"></canvas>
+                </div>
+                <div style="display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn btn-primary" id="calcularBtn">CALCULAR</button>
+                        <button type="button" class="btn btn-success ml-3" id="downloadReportBtn" style="display: none;">DESCARGAR REPORTE</button>
+                        <button type="button" class="btn btn-primary ml-3" id="newPredictionBtn" style="display: none;">AGREGAR AL INFORME</button>
+                </div>
+                <div id="errorContainer" class="message-container">
+                {% if error_message %}
+                <div class="message error-message">{{ error_message }}</div>
+                {% endif %}
+                </div>
+            </form>
         </div>
-        <div style="display: flex; justify-content: flex-end;">
-            <button type="button" class="btn btn-success ml-3" id="downloadReportBtn" style="display: none;">DESCARGAR REPORTE</button>
-        </div>
-
     </div>
-</div>
 <!-- Input Form End -->
 
 <footer>
@@ -127,7 +184,9 @@
 
 
 <!-- JavaScript Libraries -->
-<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
 <script src="../lib/easing/easing.min.js"></script>
 <script src="../lib/waypoints/waypoints.min.js"></script>

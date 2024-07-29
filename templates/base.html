@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 
-
 <head>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <meta charset="utf-8">
     <title>{% block title %}Titulo{% endblock %}</title>
     <link rel="icon" href="../static/img/53a67be1a52c2b76def636cb5c0c9b85dd4fa535.ico" type="image/png">
@@ -31,20 +32,58 @@
 <body>
 <div class="container-fluid p-0 nav-bar">
     <nav class="navbar navbar-expand-lg bg-none navbar-dark py-3">
-        <a href="/inicio" class="navbar-brand px-lg-4 m-0">
-            <img src="../static/img/unlSPD.png" alt="Bootstrap" width="250" height="55">
+        <a href="/" class="navbar-brand px-lg-4 m-0">
+            <img src="../static/img/unlSPD.png" alt="UNL" width="250" height="55">
         </a>
-        <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+        <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
             <div class="navbar-nav ml-auto p-4">
                 {% block navbar %}
-                <a href="/inicio" class="nav-item nav-link">Inicio</a>
+                <a href="/" class="nav-item nav-link">Inicio</a>
                 <a href="/acercaDe" class="nav-item nav-link">Acerca de</a>
                 <a href="/prediccion" class="nav-item nav-link">Servicios</a>
                 <a href="/contacto" class="nav-item nav-link">Contacto</a>
                 {% endblock %}
+
+                {% if usuarioCorrecto %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown">
+                        <ion-icon name="person-circle-outline"></ion-icon>
+                        <style>
+                            ion-icon {
+                                font-size: 30px;
+                            }
+                        </style>
+                    </a>
+                    <ul class="dropdown-menu custom-dropdown-menu" style="direction: rtl; text-align: right;">
+                        <li>
+                            <a class="nav-link disabled text-end" aria-disabled="true"
+                               style="color: black; font-size: 12px;">{{ correoUsuario }}</a>
+                            <hr class="dropdown-divider" style="border-top: 1px solid #414141;">
+                        </li>
+                        <li><a class="dropdown-item" href="/signout">Cerrar Sesión</a></li>
+                    </ul>
+                </li>
+
+                <style>
+                    .custom-dropdown-menu {
+                        position: absolute;
+                        right: 0;
+                        top: 0;
+                        left: auto;
+                        transform: translateY(45%);
+                        border-radius: 8px;
+                    }
+
+                    .custom-dropdown-menu .dropdown-item:hover {
+                        color: #cb7f2d;
+                    }
+                </style>
+                {% else %}
+                <a href="/login" class="btn btn-outline-warning" role="button">Iniciar Sesión</a>
+                {% endif %}
             </div>
         </div>
     </nav>
@@ -78,8 +117,9 @@
 </footer>
 
 <!-- JavaScript Libraries -->
-<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="../lib/easing/easing.min.js"></script>
 <script src="../lib/waypoints/waypoints.min.js"></script>
 <script src="../lib/owlcarousel/owl.carousel.min.js"></script>
@@ -87,12 +127,17 @@
 <script src="../lib/tempusdominus/js/moment-timezone.min.js"></script>
 <script src="../lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
 
+<!-- Nuevo -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
+
 <!-- Contact Javascript File -->
 <script src="../mail/jqBootstrapValidation.min.js"></script>
 <script src="../mail/contact.js"></script>
 
 <!-- Template Javascript -->
 <script src="../static/js/main.js"></script>
+<script src="../static/js/prediccion.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
 <script>

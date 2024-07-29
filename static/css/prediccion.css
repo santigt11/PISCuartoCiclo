@@ -11,8 +11,9 @@
 
 .graph-container {
     width: 100%;
-    max-width: 600px;
-    margin-bottom: 20px;
+    max-width: 900px;
+    height: 600px;
+    margin-bottom: 30px;
 }
 
 .report-container {
@@ -55,6 +56,21 @@
 .table tbody+tbody {
     border-top: 2px solid #dee2e6;
 }
+.message-container {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 15px;
+}
+
+/* Estilos para mensajes de error */
+.error-message {
+    background-color: rgba(232, 77, 1, 0.73); /* Color de fondo rojo claro */
+    color: #ffffff; /* Color del texto rojo oscuro */
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 15px;
+}
 .form-row {
             display: flex;
             flex-wrap: wrap;
@@ -68,3 +84,4 @@
             display: flex;
             justify-content: space-between;
         }
+
