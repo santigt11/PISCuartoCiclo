@@ -92,16 +92,9 @@ function generateChart(data) {
             x: {
                 title: {
                     display: true,
-                    text: 'Ciclo'
+                    text: 'Período'
                 }
             },
-            y: {
-                title: {
-                    display: true,
-                    text: 'Número de Estudiantes'
-                },
-                beginAtZero: false
-            }
         },
         plugins: {
             legend: {
