@@ -29,7 +29,7 @@ def signout():
     global correoUsuario
     usuarioCorrecto = False
     correoUsuario = None
-    return render_template('indexEstudiante.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+    return redirect(url_for('principal'))
 
 @app.route('/signin', methods=['POST'])
 def signin():
