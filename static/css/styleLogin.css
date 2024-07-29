@@ -8,7 +8,7 @@
 .container {
     width: 100%;
     height: 100vh;
-    background-color: #faf8f8;
+    background-color: #eae3dc;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -21,12 +21,10 @@
     border-radius: 25px;
     background: linear-gradient(
         to bottom right,
-        #1a1f2c,
-        #4b2a5c,
-        #50535c,
-        #5b6c7b
+        rgb(218, 159, 91),
+        rgb(234, 217, 198)
     );
-    color: #fff; /* Color del texto */
+    color: #fff;
 }
 .form-content h1{
     font-size: 30px;
@@ -39,14 +37,14 @@
     width: 30px;
     height: 4px;
     border-radius: 3px;
-    background: #0f6848;
+    background: #cb7f2d;
     position: absolute;
     bottom: -12px;
     left: 50%;
     transform: translateX(-50%);
 }
 .input-field{
-    background-color: #5a6268;
+    background-color: rgba(103, 41, 41, 0.58);
     margin: 15px 0;
     border-radius: 3px;
     display: flex;
@@ -69,7 +67,7 @@ input::placeholder{
 
 .input-field i{
     margin-left: 15px;
-    color: #04BD7D;
+    color: #cb7f2d;
 }
 form p{
     color:#fffefe;
@@ -77,7 +75,7 @@ form p{
     text-align: left;
 }
 form p a{
-    color:#04BD7D;
+    color:#DA9F5B;
     margin-left: 5px;
 }
 .btn-field{
@@ -88,7 +86,7 @@ form p a{
 .btn-field button{
     flex-basis: 48%;
     font-size: 16px;
-    background-color: #04BD7D;
+    background-color: #cb7f2d;
     color: #fffefe;
     height: 40px;
     border-radius: 10px;

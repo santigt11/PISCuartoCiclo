@@ -1,14 +1,14 @@
 import time
 
 import numpy as np
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, flash, render_template, request, redirect, url_for, jsonify
 from flask import Flask, render_template, request, redirect, url_for
 
 from RungeKuttaSimulator import RungeKuttaSimulator
 from configBD import *
 
 app = Flask(__name__)
-
+app.secret_key = 'hola'
 
 # Ruta para mostrar el formulario de login
 @app.route('/')
@@ -51,83 +51,241 @@ def signin():
 def contarUsuarios():
     conexion_MySQL = connectionBD()
     mycursos = conexion_MySQL.cursor(dictionary=True)
-    querySQL = "SELECT COUNT(*) FROM PIS.Estudiantes"
+    querySQL = "SELECT COUNT(*) AS total FROM PIS.Estudiantes"
     mycursos.execute(querySQL)
-    count = mycursos.fetchone()
-    mycursos.close()
-    return count
+    return list(mycursos.fetchone().values())[0]
+
+@app.route('/obtener_estudiantes', methods=['GET'])
+def obtener_estudiantes():
+    total_estudiantes = contarUsuarios()
+    return jsonify({'total': total_estudiantes})
 
 # Ruta para la página principal
 @app.route('/inicio')
 def principal():
     return render_template('indexEstudiante.html')
 
+
 @app.route('/acercaDe')
 def informacion():
     return render_template('about.html')
 
-@app.route('/modelo')
-def matematica():
-    return render_template('service.html')
-@app.route('/prediccion')
-def prediccion():
-    return render_template('prediccion.html')
-@app.route('/contacto')
-def contacto():
-    return render_template('contactDocente.html')
-#Sistema de ecuaciones
-# Función para el sistema de ecuaciones
-def sistema_ecuaciones(t, y):
-    tasa_ingreso = 100  # estudiantes por unidad de tiempo
-    tasa_desercion_total = 0.1  # fracción de estudiantes que desertan por unidad de tiempo
-    tasa_desercion_economica = 0.06  # fracción de estudiantes que desertan por factores económicos
-    proporcion_hombres = 0.55  # proporción de hombres en los nuevos ingresos
-
-    dy = np.zeros(5)
-    dy[0] = tasa_ingreso - tasa_desercion_total * y[0]
-    dy[1] = proporcion_hombres * tasa_ingreso - tasa_desercion_total * y[1]
-    dy[2] = (1 - proporcion_hombres) * tasa_ingreso - tasa_desercion_total * y[2]
-    dy[3] = tasa_desercion_total * y[0]
-    dy[4] = tasa_desercion_economica * y[0]
-
-    return dy
-
-# Función para el método de Runge-Kutta de cuarto orden
-def runge_kutta_4(f, t0, y0, t_final, h):
-    t = np.arange(t0, t_final + h, h)
-    n = len(t)
-    y = np.zeros((n, len(y0)))
-    y[0] = y0
-
-    for i in range(1, n):
-        k1 = h * f(t[i - 1], y[i - 1])
-        k2 = h * f(t[i - 1] + 0.5 * h, y[i - 1] + 0.5 * k1)
-        k3 = h * f(t[i - 1] + 0.5 * h, y[i - 1] + 0.5 * k2)
-        k4 = h * f(t[i - 1] + h, y[i - 1] + k3)
-
-        y[i] = y[i - 1] + (k1 + 2 * k2 + 2 * k3 + k4) / 6
-
-    return t, y
-
-# Ruta para calcular los datos con el método de Runge-Kutta
-@app.route('/calculate', methods=['POST'])
-def calculate():
+# Ruta para calcular los datos con el método de Euler
+@app.route('/calculate_rungeKutta', methods=['POST'])
+def calculate_rungeKutta():
     data = request.get_json()
-    t0 = float(data['t0'])
-    y0 = list(map(float, data['y0']))
-    t_final = float(data['t_final'])
-    h = float(data['h'])
+    estudiantes_inicial = int(data['estudiantes_inicial'])
+    año_inicio = int(data['año_inicio'])
+    año_fin = int(data['año_fin'])
+    opcion = data['opcion']
 
-    t, y = runge_kutta_4(sistema_ecuaciones, t0, y0, t_final, h)
+    simulator = RungeKuttaSimulator()
+    estudiantes, nuevos_ingresos, desertores = simulator.simular_ciclos(estudiantes_inicial, año_inicio, año_fin, opcion)
 
-    # Preparar los datos para ser enviados al cliente
+    años = list(range(año_inicio, año_fin + 1))
+
     response_data = {
-        't': t.tolist(),
-        'y': y[:, 4].tolist()  # Selecciona la columna correspondiente a 'y4' para los resultados
+        'estudiantes': estudiantes,
+        'nuevos_ingresos': nuevos_ingresos,
+        'desertores': desertores,
+        'años': años
     }
 
     return jsonify(response_data)
 
+# Ruta para la página de predicción
+@app.route('/prediccion')
+def prediccion():
+    return render_template('prediccion.html')
+
+@app.route('/contacto')
+def contacto():
+    return render_template('contactDocente.html')
+
+
+
+#Administrar
+def obtener_ultimo_id():
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor()
+        cursor.execute("SELECT MAX(id_Usuario) FROM usuarios")
+        resultado = cursor.fetchone()
+        return 1 if resultado[0] is None else resultado[0] + 1
+    except mysql.connector.Error as error:
+        print(f"Error al obtener el último ID: {error}")
+        return None
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+def crear_usuario(clave, correo, isDocente):
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor()
+        nuevo_id = obtener_ultimo_id()
+        if nuevo_id is None:
+            return "Error al generar nuevo ID"
+        sql = "INSERT INTO usuarios (id_Usuario, clave, correo, isDocente) VALUES (%s, %s, %s, %s)"
+        valores = (nuevo_id, clave, correo, isDocente)
+        cursor.execute(sql, valores)
+        connection.commit()
+        return f"Usuario creado exitosamente con ID: {nuevo_id}"
+    except mysql.connector.Error as error:
+        return f"Error al crear usuario: {error}"
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+@app.route('/administrar', methods=['GET', 'POST'])
+def crearUsuario():
+    if request.method == 'POST':
+        clave = request.form['clave']
+        correo = request.form['correo']
+        isDocente = 1 if 'isDocente' in request.form else 0
+        resultado = crear_usuario(clave, correo, isDocente)
+        flash(resultado)
+        return redirect(url_for('usuarioCreado'))
+    return render_template('registrarUsuario.html')
+
+@app.route('/crear_Usuario')
+def usuarioCreado():
+    return render_template('registrarUsuario.html')
+
+#Obtengo los usuarios
+@app.route('/modificar', methods=['GET'])
+def obtenerUsuarios():
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM usuarios")
+        usuarios = cursor.fetchall()
+        return render_template('modificarUsuario.html', usuarios=usuarios)
+    except mysql.connector.Error as error:
+        print(f"Error al obtener los usuarios: {error}")
+        return "Error al obtener los usuarios"
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+            
+@app.route('/actualizar_usuario', methods=['POST'])
+def actualizarUsuario():
+    id_usuario = request.form['id_usuario']
+    clave = request.form['clave']
+    correo = request.form['correo']
+    isDocente = 1 if 'isDocente' in request.form else 0
+
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor()
+        sql = "UPDATE usuarios SET clave = %s, correo = %s, isDocente = %s WHERE id_Usuario = %s"
+        valores = (clave, correo, isDocente, id_usuario)
+        cursor.execute(sql, valores)
+        connection.commit()
+        flash("Usuario actualizado exitosamente")
+    except mysql.connector.Error as error:
+        flash(f"Error al actualizar usuario: {error}")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return redirect(url_for('obtenerUsuarios'))
+
+
+#Registrar Periodos
+def obtener_ultimo_id_periodo():
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor()
+        cursor.execute("SELECT MAX(id) FROM periodo")
+        resultado = cursor.fetchone()
+        return 1 if resultado[0] is None else resultado[0] + 1
+    except mysql.connector.Error as error:
+        print(f"Error al obtener el último ID del periodo: {error}")
+        return None
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+def crear_periodo(cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesUltimoCiclo):
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor()
+        nuevo_id = obtener_ultimo_id_periodo()
+        if nuevo_id is None:
+            return "Error al generar nuevo ID del periodo"
+        sql = "INSERT INTO periodo (id, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesUltimoCiclo) VALUES (%s, %s, %s, %s)"
+        valores = (nuevo_id, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesUltimoCiclo)
+        cursor.execute(sql, valores)
+        connection.commit()
+        return f"Periodo creado exitosamente con ID: {nuevo_id}"
+    except mysql.connector.Error as error:
+        return f"Error al crear periodo: {error}"
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+@app.route('/periodo', methods=['GET', 'POST'])
+def crearPeriodo():
+    if request.method == 'POST':
+        cantEstudiantesHombre = int(request.form['cantEstudiantesHombre'])
+        cantEstudiantesMujer = int(request.form['cantEstudiantesMujer'])
+        cantEstudiantesUltimoCiclo = int(request.form['cantEstudiantesUltimoCiclo'])
+        resultado = crear_periodo(cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesUltimoCiclo)
+        flash(resultado)
+        return redirect(url_for('periodoCreado'))
+    return render_template('registrarPeriodo.html')
+
+@app.route('/crear_Periodo')
+def periodoCreado():
+    return render_template('registrarPeriodo.html')
+
+#Obtengo los usuarios
+@app.route('/modificarPeriodo', methods=['GET'])
+def obtenerPeriodos():
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM periodo")
+        periodos = cursor.fetchall()
+        return render_template('modificarPeriodo.html', periodo=periodos)
+    except mysql.connector.Error as error:
+        print(f"Error al obtener los periodos: {error}")
+        return "Error al obtener los periodos"
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+            
+@app.route('/actualizar_periodo', methods=['POST'])
+def actualizarPeriodo():
+    id = request.form['id']
+    cantEstudiantesHombre = request.form['cantEstudiantesHombre']
+    cantEstudiantesMujer = request.form['cantEstudiantesMujer']
+    cantEstudiantesUltimoCiclo = request.form['cantEstudiantesUltimoCiclo']
+
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor()
+        sql = "UPDATE periodo SET cantEstudiantesHombre = %s, cantEstudiantesMujer = %s, cantEstudiantesUltimoCiclo = %s WHERE id = %s"
+        valores = (cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesUltimoCiclo, id)
+        cursor.execute(sql, valores)
+        connection.commit()
+        flash("Periodo actualizado exitosamente")
+    except mysql.connector.Error as error:
+        flash(f"Error al actualizar periodo: {error}")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+    return redirect(url_for('obtenerPeriodos'))
 
 
 

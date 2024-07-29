@@ -1,71 +1,76 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-def sistema_ecuaciones(t, y):
-    # y[0]: total de estudiantes
-    # y[1]: número de hombres
-    # y[2]: número de mujeres
-    # y[3]: número total de estudiantes que han desertado
-    # y[4]: número de estudiantes que han desertado por factor económico
-
-    tasa_ingreso = 100  # estudiantes por unidad de tiempo
-    tasa_desercion_total = 0.1  # fracción de estudiantes que desertan por unidad de tiempo
-    tasa_desercion_economica = 0.06  # fracción de estudiantes que desertan por factores económicos
-    proporcion_hombres = 0.55  # proporción de hombres en los nuevos ingresos
-
-    dy = np.zeros(5)
-
-    # Cambio en el total de estudiantes
-    dy[0] = tasa_ingreso - tasa_desercion_total * y[0]
-
-    # Cambio en el número de hombres
-    dy[1] = proporcion_hombres * tasa_ingreso - tasa_desercion_total * y[1]
-
-    # Cambio en el número de mujeres
-    dy[2] = (1 - proporcion_hombres) * tasa_ingreso - tasa_desercion_total * y[2]
-
-    # Cambio en el número total de desertores
-    dy[3] = tasa_desercion_total * y[0]
-
-    # Cambio en el número de desertores por factor económico
-    dy[4] = tasa_desercion_economica * y[0]
-
-    return dy
+# Parámetros del sistema
+alpha = 0.20  # tasa de reprobación por ciclo
+beta = 0.8  # tasa de retención (1 - tasa de deserción)
+gamma = 0.10  # tasa de crecimiento de nuevos ingresos por ciclo
 
 
-def runge_kutta_4(f, t0, y0, t_final, h):
-    t = np.arange(t0, t_final + h, h)
-    n = len(t)
-    y = np.zeros((n, len(y0)))
-    y[0] = y0
+def simular_ciclos(estudiantes_inicial, año_inicio, año_fin):
+    años_simular = año_fin - año_inicio + 1
+    ciclos = años_simular * 2
 
-    for i in range(1, n):
-        k1 = h * f(t[i - 1], y[i - 1])
-        k2 = h * f(t[i - 1] + 0.5 * h, y[i - 1] + 0.5 * k1)
-        k3 = h * f(t[i - 1] + 0.5 * h, y[i - 1] + 0.5 * k2)
-        k4 = h * f(t[i - 1] + h, y[i - 1] + k3)
+    estudiantes = [estudiantes_inicial]
+    nuevos_ingresos_lista = []
+    desertores_lista = []
 
-        y[i] = y[i - 1] + (k1 + 2 * k2 + 2 * k3 + k4) / 6
+    for año in range(año_inicio, año_fin + 1):
+        for ciclo in [1, 2]:
+            # Nuevos ingresos
+            nuevos_ingresos = int(estudiantes[-1] * gamma)
+            estudiantes.append(estudiantes[-1] + nuevos_ingresos)
+            nuevos_ingresos_lista.append(nuevos_ingresos)
 
-    return t, y
+            # Deserción
+            total = estudiantes[-1]
+            reprobados = int(total * alpha)
+            desertores = int(reprobados * (1 - beta))
+            estudiantes.append(total - desertores)
+            desertores_lista.append(desertores)
+
+    return estudiantes, nuevos_ingresos_lista, desertores_lista
 
 
-# Parámetros iniciales
-t0 = 0
-y0 = [1000, 550, 450, 0, 0]  # [total, hombres, mujeres, desertores_totales, desertores_economicos]
-t_final = 50
-h = 0.1
+# Solicitar datos al usuario
+estudiantes_inicial = int(input("Ingrese el número inicial de estudiantes: "))
+año_inicio = int(input("Ingrese el año de inicio de la simulación: "))
+año_fin = int(input("Ingrese el año final de la simulación: "))
 
-# Resolver el sistema de ecuaciones
-t, y = runge_kutta_4(sistema_ecuaciones, t0, y0, t_final, h)
+# Realizar simulación
+estudiantes, nuevos_ingresos, desertores = simular_ciclos(estudiantes_inicial, año_inicio, año_fin)
 
-# Graficar los resultados
-plt.figure(figsize=(12, 8))
-plt.plot(t, y[:, 4], 'r-', label='Desertores por factor económico')
-plt.title('Deserción estudiantil por factor económico')
-plt.xlabel('Tiempo')
-plt.ylabel('Número de estudiantes')
-plt.legend()
+# Graficar resultados
+plt.figure(figsize=(15, 8))
+plt.plot(range(len(estudiantes)), estudiantes, marker='o')
+plt.xlabel("Ciclo")
+plt.ylabel("Número de Estudiantes")
+plt.title(f"Simulación de Estudiantes ({año_inicio}-{año_fin})")
 plt.grid(True)
+
+# Añadir etiquetas de datos
+for i, est in enumerate(estudiantes):
+    plt.annotate(f"{est}", (i, est), textcoords="offset points", xytext=(0, 10), ha='center')
+
+plt.tight_layout()
 plt.show()
+
+# Imprimir resultados
+print("\nResultados detallados:")
+print(f"{año_inicio}-1 Inicio: {estudiantes[0]} estudiantes")
+
+for i in range(1, len(estudiantes), 2):
+    año = año_inicio + (i - 1) // 4
+    ciclo = 2 if (i - 1) % 4 >= 2 else 1
+
+    inicio_ciclo = estudiantes[i - 1]
+    ingresados = nuevos_ingresos[i // 2]
+    desertados = desertores[i // 2]
+    fin_ciclo = estudiantes[i + 1]
+
+    print(f"\n{año}-{ciclo}:")
+    print(f"  Inicio del ciclo: {inicio_ciclo} estudiantes")
+    print(f"  Ingresaron: {ingresados} estudiantes")
+    print(f"  Desertaron: {desertados} estudiantes")
+    print(f"  Fin del ciclo: {fin_ciclo} estudiantes")
+    print(f"  Cambio neto: {fin_ciclo - inicio_ciclo} estudiantes")
