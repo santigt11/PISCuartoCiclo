@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function handleFormSubmit(event) {
         event.preventDefault();
 
-        if (predicciones.length >= 8) {
+        if (predicciones.length >= 3) {
             alert('Ya se han realizado 3 predicciones. Descargue el informe o reinicie para hacer nuevas predicciones.');
             return;
         }
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function handleNewPrediction() {
 
-        if (predicciones.length < 8) {
+        if (predicciones.length < 3) {
             rungeKuttaForm.reset();
 
             //const canvas = document.getElementById('myChart');
