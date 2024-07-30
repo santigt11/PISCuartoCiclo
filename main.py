@@ -96,19 +96,50 @@ def informacion():
     return render_template('about.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
 
+# Add this new route
+@app.route('/get_total_students/<int:year>', methods=['GET'])
+def get_total_students(year):
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor(dictionary=True)
+
+        # First, try to get the total from the anio table
+        cursor.execute("SELECT totalEstudiantes FROM anio WHERE numAnio = %s", (year,))
+        result = cursor.fetchone()
+
+        if result:
+            total = result['totalEstudiantes']
+        else:
+            # If not found in anio table, calculate from periodo table
+            cursor.execute("""
+                SELECT SUM(cantEstudiantesTotal) as total
+                FROM periodo
+                WHERE numAnio = %s
+            """, (year,))
+            result = cursor.fetchone()
+            total = result['total'] if result and result['total'] is not None else 0
+
+        return jsonify({'total': total})
+    except mysql.connector.Error as error:
+        print(f"Error al obtener el total de estudiantes: {error}")
+        return jsonify({'error': str(error)}), 500
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
 # Ruta para calcular los datos con el método de Euler
 @app.route('/calculate_rungeKutta', methods=['POST'])
 def calculate_rungeKutta():
     data = request.get_json()
-    estudiantes_inicial = int(data['estudiantes_inicial'])
     año_inicio = int(data['año_inicio'])
     año_fin = int(data['año_fin'])
     opcion = data['opcion']
     factor = data['factor']
+    estudiantes_inicial = int(data['estudiantes_inicial'])
 
     simulator = RungeKuttaPrediccion()
-    estudiantes, nuevos_ingresos, desertores = simulator.simular_ciclos(estudiantes_inicial, año_inicio, año_fin,
-                                                                        opcion, factor)
+    estudiantes, nuevos_ingresos, desertores = simulator.simular_ciclos(estudiantes_inicial, año_inicio, año_fin, opcion, factor)
 
     años = list(range(año_inicio, año_fin + 1))
 
