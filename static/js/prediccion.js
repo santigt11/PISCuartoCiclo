@@ -25,8 +25,12 @@ document.addEventListener('DOMContentLoaded', function () {
             opcion: document.getElementById('opcion').value,
             factor: document.getElementById('factor').value
         };
-
-        fetch('/obtener_estudiantes')
+        
+        
+        try{
+            validateYearRange(formData.año_inicio, formData.año_fin);
+            validateStartYear(formData.año_inicio);
+            fetch('/obtener_estudiantes')
             .then(response => response.json())
             .then(data => {
                 formData.estudiantes_inicial = data.total;
@@ -68,7 +72,35 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error('Error:', error);
                 showErrorMessage('Hubo un error al procesar la solicitud. Por favor, inténtelo de nuevo.');
             });
+        }catch (error) {
+             showErrorMessage(error.message);
+        }
+
     }
+    function validateYearRange(startYear, endYear) {
+        if (endYear < startYear) {
+            throw new Error('El año final no puede ser menor al año de inicio.');
+        }
+    }
+    function validateStartYear(startYear) {
+    const foundationYear = 2003;
+        if (startYear < foundationYear) {
+            throw new Error(`El año de inicio no puede ser menor a ${foundationYear}.`);
+        }
+    }
+    function showErrorMessage(message) {
+    // Eliminar cualquier referencia a la dirección IP y puerto
+    const cleanedMessage = message.replace(/^.*?:\d+\s*dice\s*/, '');
+
+    // Asegurarse de que el mensaje comienza con "Error:"
+    const finalMessage = cleanedMessage.startsWith('Error:') ? cleanedMessage : 'Error: ' + cleanedMessage;
+
+    // Mostrar un mensaje de alerta más amigable
+    alert(finalMessage);
+
+    // Registrar el error completo en la consola para depuración
+    console.error('Error detallado:', message);
+}
 
     function handleNewPrediction() {
 
@@ -265,7 +297,8 @@ function generateCycleLabels(años) {
 }
 
 function generateAndDownloadReport() {
-    const { jsPDF } = window.jspdf;
+    try{
+        const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
     doc.addImage('static/img/PortadaUnl.png', 'PNG', 20, 20, 170, 250, 'center');
@@ -362,7 +395,7 @@ function generateAndDownloadReport() {
                     y: { display: true }
                 }
             }
-        });
+            });
 
         // Usar setTimeout para asegurarse de que la gráfica se ha renderizado completamente
         setTimeout(() => {
@@ -383,6 +416,11 @@ function generateAndDownloadReport() {
 
     // Iniciar el proceso con la primera predicción
     processPrediction(0);
+    }catch (error) {
+         showErrorMessage('Hubo un error al generar el informe: ' + error.message);
+    }
+
+
 }
 
 function resetAfterDownload() {
