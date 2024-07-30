@@ -25,8 +25,12 @@ document.addEventListener('DOMContentLoaded', function () {
             opcion: document.getElementById('opcion').value,
             factor: document.getElementById('factor').value
         };
-
-        fetch('/obtener_estudiantes')
+        
+        
+        try{
+            validateYearRange(formData.año_inicio, formData.año_fin);
+            validateStartYear(formData.año_inicio);
+            fetch('/obtener_estudiantes')
             .then(response => response.json())
             .then(data => {
                 formData.estudiantes_inicial = data.total;
@@ -45,7 +49,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 return response.json();
             })
             .then(data => {
-                predicciones.push(data);
+                data.opcion = document.getElementById('opcion').value;
+                data.factor = document.getElementById('factor').value;
+                data.visualizacion = document.getElementById('visualizar').value;
+                data.año_inicio = parseInt(document.getElementById('año_inicio').value);
+                data.año_fin = parseInt(document.getElementById('año_fin').value);
+                predicciones.push(data);  // Solo agregar una vez
+
                 if (currentChart) {
                     //currentChart.destroy();
                     currentChart.data = createChartData(data, document.getElementById('visualizar').value);
@@ -62,7 +72,35 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.error('Error:', error);
                 showErrorMessage('Hubo un error al procesar la solicitud. Por favor, inténtelo de nuevo.');
             });
+        }catch (error) {
+             showErrorMessage(error.message);
+        }
+
     }
+    function validateYearRange(startYear, endYear) {
+        if (endYear < startYear) {
+            throw new Error('El año final no puede ser menor al año de inicio.');
+        }
+    }
+    function validateStartYear(startYear) {
+    const foundationYear = 2003;
+        if (startYear < foundationYear) {
+            throw new Error(`El año de inicio no puede ser menor a ${foundationYear}.`);
+        }
+    }
+    function showErrorMessage(message) {
+    // Eliminar cualquier referencia a la dirección IP y puerto
+    const cleanedMessage = message.replace(/^.*?:\d+\s*dice\s*/, '');
+
+    // Asegurarse de que el mensaje comienza con "Error:"
+    const finalMessage = cleanedMessage.startsWith('Error:') ? cleanedMessage : 'Error: ' + cleanedMessage;
+
+    // Mostrar un mensaje de alerta más amigable
+    alert(finalMessage);
+
+    // Registrar el error completo en la consola para depuración
+    console.error('Error detallado:', message);
+}
 
     function handleNewPrediction() {
 
@@ -246,16 +284,25 @@ function createChartData(data, visualizacion) {
         };
     }
 }
+function getCurrentDate() {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    return `${day}-${month}-${year}`;
+}
 
 function generateCycleLabels(años) {
     return años.flatMap(año => [`${año}-1`, `${año}-2`]);
 }
 
 function generateAndDownloadReport() {
-    const { jsPDF } = window.jspdf;
+    try{
+        const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    const visualizacion = document.getElementById('visualizar').value;
 
+    doc.addImage('static/img/PortadaUnl.png', 'PNG', 20, 20, 170, 250, 'center');
+    doc.addPage();
     doc.setFont('Helvetica', 'bold');
     doc.setFontSize(18);
     doc.text('Informe De Predicción De Deserción Estudiantil', 105, 15, null, null, 'center');
@@ -264,8 +311,9 @@ function generateAndDownloadReport() {
 
     function processPrediction(index) {
         if (index >= predicciones.length) {
-            doc.save('Informe_Deserción.pdf');
-            resetAfterDownload();
+            const currentDate = getCurrentDate();
+            doc.save(`Informe_Deserción_${currentDate}.pdf`);
+            //resetAfterDownload();
             return;
         }
 
@@ -284,20 +332,28 @@ function generateAndDownloadReport() {
         doc.setFontSize(12);
         doc.setFont('helvetica', 'normal');
 
-        for (let i = 1; i < data.estudiantes.length; i += 2) {
-            const año = data.años[0] + Math.floor((i - 1) / 4);
-            const ciclo = (i - 1) % 4 >= 2 ? 2 : 1;
+        // Agregar información sobre las opciones seleccionadas
+        doc.text(`Género: ${data.opcion}`, 10, y); y += 7;
+        doc.text(`Factor de deserción: ${data.factor}`, 10, y); y += 7;
+        doc.text(`Visualización: ${data.visualizacion}`, 10, y); y += 7;
+        doc.text(`Año inicio: ${data.años[0]}`, 10, y); y += 7;
+        doc.text(`Año fin: ${data.años[data.años.length - 1]}`, 10, y); y += 10;
 
+        for (let i = 1; i < data.estudiantes.length; i += 2) {
+            const año = data.años[Math.floor((i - 1) / 4)];
+            const ciclo = (i - 1) % 4 >= 2 ? 2 : 1;
             const inicio_ciclo = data.estudiantes[i - 1];
             const ingresados = data.nuevos_ingresos[Math.floor(i / 2)];
             const desertados = data.desertores[Math.floor(i / 2)];
-            const fin_ciclo = data.estudiantes[i + 1];
+            const fin_ciclo = data.estudiantes[i+1];
 
             const tableData = [
                 ['Inicio del Período', formatNumber(inicio_ciclo)],
                 ['Nuevos Ingresos', formatNumber(ingresados)],
                 ['Desertores', formatNumber(desertados)],
+                ['Fin del Período', formatNumber(fin_ciclo)]
             ];
+
 
             doc.setFontSize(11);
             doc.text(`El ciclo ${ciclo} del año ${año} tiene los siguientes resultados: `, 10, y);
@@ -312,9 +368,13 @@ function generateAndDownloadReport() {
             });
 
             y = doc.lastAutoTable.finalY + 10;
-        }
 
-        y = doc.lastAutoTable.finalY + 10;
+            if (y > doc.internal.pageSize.height - 20) {
+                doc.addPage();
+                currentPage++;
+                y = 20;
+            }
+        }
 
         // Generar la gráfica para el PDF
         const canvas = document.createElement('canvas');
@@ -322,7 +382,7 @@ function generateAndDownloadReport() {
         canvas.height = 400;
         const ctx = canvas.getContext('2d');
 
-        const chartData = createChartData(data, visualizacion);
+        const chartData = createChartData(data, data.visualizacion);
 
         new Chart(ctx, {
             type: 'line',
@@ -335,7 +395,7 @@ function generateAndDownloadReport() {
                     y: { display: true }
                 }
             }
-        });
+            });
 
         // Usar setTimeout para asegurarse de que la gráfica se ha renderizado completamente
         setTimeout(() => {
@@ -344,19 +404,23 @@ function generateAndDownloadReport() {
             // Verificar si hay espacio suficiente en la página actual
             if (y + 80 > doc.internal.pageSize.height - 20) {
                 doc.addPage();
-                currentPage++;
-                y = 20;
+                y=40;
             }
 
             doc.addImage(imgData, 'PNG', 10, y, 180, 80);
-
+             y += 90;
             // Procesar la siguiente predicción
             processPrediction(index + 1);
-        }, 1000);
+        }, 100);
     }
 
     // Iniciar el proceso con la primera predicción
     processPrediction(0);
+    }catch (error) {
+         showErrorMessage('Hubo un error al generar el informe: ' + error.message);
+    }
+
+
 }
 
 function resetAfterDownload() {
