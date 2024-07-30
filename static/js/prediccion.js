@@ -12,25 +12,19 @@ document.addEventListener('DOMContentLoaded', function () {
     newPredictionBtn.addEventListener('click', handleNewPrediction);
 
     function handleFormSubmit(event) {
-        event.preventDefault();
+    event.preventDefault();
 
-        if (predicciones.length >= 3) {
-            alert('Ya se han realizado 3 predicciones. Descargue el informe o reinicie para hacer nuevas predicciones.');
-            return;
-        }
+    const formData = {
+        año_inicio: parseInt(document.getElementById('año_inicio').value),
+        año_fin: parseInt(document.getElementById('año_fin').value),
+        opcion: document.getElementById('opcion').value,
+        factor: document.getElementById('factor').value
+    };
 
-        const formData = {
-            año_inicio: parseInt(document.getElementById('año_inicio').value),
-            año_fin: parseInt(document.getElementById('año_fin').value),
-            opcion: document.getElementById('opcion').value,
-            factor: document.getElementById('factor').value
-        };
-        
-        
-        try{
-            validateYearRange(formData.año_inicio, formData.año_fin);
-            validateStartYear(formData.año_inicio);
-            fetch('/obtener_estudiantes')
+    try {
+        validateYearRange(formData.año_inicio, formData.año_fin);
+        validateStartYear(formData.año_inicio);
+        fetch('/obtener_estudiantes')
             .then(response => response.json())
             .then(data => {
                 formData.estudiantes_inicial = data.total;
@@ -54,29 +48,28 @@ document.addEventListener('DOMContentLoaded', function () {
                 data.visualizacion = document.getElementById('visualizar').value;
                 data.año_inicio = parseInt(document.getElementById('año_inicio').value);
                 data.año_fin = parseInt(document.getElementById('año_fin').value);
-                predicciones.push(data);  // Solo agregar una vez
 
+                // Guardar temporalmente la predicción actual
+                currentPrediction = data;
+
+                // Destruir el gráfico anterior si existe
                 if (currentChart) {
-                    //currentChart.destroy();
-                    currentChart.data = createChartData(data, document.getElementById('visualizar').value);
-                    currentChart.update();
+                    currentChart.destroy();
                 }
+
+                // Crear el nuevo gráfico
                 currentChart = generateChart(data);
 
                 downloadReportBtn.style.display = 'block';
                 newPredictionBtn.style.display = 'block';
-
-
             })
             .catch(error => {
                 console.error('Error:', error);
-                showErrorMessage('Hubo un error al procesar la solicitud. Por favor, inténtelo de nuevo.');
             });
-        }catch (error) {
-             showErrorMessage(error.message);
-        }
-
+    } catch (error) {
+        showErrorMessage(error.message);
     }
+}
     function validateYearRange(startYear, endYear) {
         if (endYear < startYear) {
             throw new Error('El año final no puede ser menor al año de inicio.');
@@ -103,18 +96,18 @@ document.addEventListener('DOMContentLoaded', function () {
 }
 
     function handleNewPrediction() {
-
         if (predicciones.length < 3) {
-            rungeKuttaForm.reset();
-
-            //const canvas = document.getElementById('myChart');
-            alert('La predicción actual ha sido guardada. Puede realizar una nueva predicción.');
-           //const ctx = canvas.getContext('2d');
-            //ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (currentPrediction) {
+                predicciones.push(currentPrediction);
+                currentPrediction = null;
+                rungeKuttaForm.reset();
+                alert('La predicción actual ha sido guardada. Puede realizar una nueva predicción.');
+            } else {
+                alert('No hay ninguna predicción actual para guardar.');
+            }
             downloadReportBtn.style.display = 'block';
             newPredictionBtn.style.display = 'block';
         } else {
-
             alert('Ya se han realizado 3 predicciones. Descargue el informe o reinicie para hacer nuevas predicciones.');
         }
     }
