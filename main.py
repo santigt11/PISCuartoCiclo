@@ -1,8 +1,6 @@
 import time
 import numpy as np
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
-from flask import Flask, render_template, request, redirect, url_for
-
 from RungeKuttaPrediccion import RungeKuttaPrediccion
 from configBD import *
 
@@ -13,6 +11,7 @@ app.secret_key = 'hola'
 usuarioCorrecto = False
 correoUsuario = None
 
+
 # Ruta para mostrar el formulario de login
 @app.route('/login')
 def login():
@@ -22,6 +21,7 @@ def login():
     correoUsuario = None
     return render_template('login.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
+
 # Cerrar Sesion
 @app.route('/signout')
 def signout():
@@ -29,7 +29,8 @@ def signout():
     global correoUsuario
     usuarioCorrecto = False
     correoUsuario = None
-    return render_template('indexEstudiante.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+    return redirect(url_for('principal'))
+
 
 @app.route('/signin', methods=['POST'])
 def signin():
@@ -43,7 +44,8 @@ def signin():
     if not correo or not contrasena:
         error_message = 'Por favor, completa todos los campos.'
         time.sleep(1)  # Espera de 1 segundos antes de continuar
-        return render_template('login.html', error_message=error_message, usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+        return render_template('login.html', error_message=error_message, usuarioCorrecto=usuarioCorrecto,
+                               correoUsuario=correoUsuario)
 
     # Lógica de validación (simplificada)
     conexion_MySQL = connectionBD()
@@ -65,7 +67,9 @@ def signin():
         return redirect(url_for('principal'))  # Redirige a otra vista si las credenciales son correctas
     else:
         error_message = 'Credenciales incorrectas. Intenta de nuevo.'
-        return render_template('login.html', error_message=error_message, usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+        return render_template('login.html', error_message=error_message, usuarioCorrecto=usuarioCorrecto,
+                               correoUsuario=correoUsuario)
+
 
 def contarUsuarios():
     conexion_MySQL = connectionBD()
@@ -74,19 +78,23 @@ def contarUsuarios():
     mycursos.execute(querySQL)
     return list(mycursos.fetchone().values())[0]
 
+
 @app.route('/obtener_estudiantes', methods=['GET'])
 def obtener_estudiantes():
     total_estudiantes = contarUsuarios()
     return jsonify({'total': total_estudiantes})
+
 
 # Ruta para la página principal
 @app.route('/')
 def principal():
     return render_template('indexEstudiante.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
+
 @app.route('/acercaDe')
 def informacion():
     return render_template('about.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+
 
 # Ruta para calcular los datos con el método de Euler
 @app.route('/calculate_rungeKutta', methods=['POST'])
@@ -99,7 +107,8 @@ def calculate_rungeKutta():
     factor = data['factor']
 
     simulator = RungeKuttaPrediccion()
-    estudiantes, nuevos_ingresos, desertores = simulator.simular_ciclos(estudiantes_inicial, año_inicio, año_fin, opcion,factor)
+    estudiantes, nuevos_ingresos, desertores = simulator.simular_ciclos(estudiantes_inicial, año_inicio, año_fin,
+                                                                        opcion, factor)
 
     años = list(range(año_inicio, año_fin + 1))
 
@@ -112,6 +121,7 @@ def calculate_rungeKutta():
 
     return jsonify(response_data)
 
+
 # Ruta para la página de predicción
 @app.route('/prediccion')
 def prediccion():
@@ -122,13 +132,66 @@ def prediccion():
     else:
         return redirect(url_for('login'))
 
+
 @app.route('/contacto')
 def contacto():
     return render_template('contactDocente.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
 
+# Ruta para mostrar el formulario de cambio de contraseña
+@app.route('/cambiar_contrasena')
+def cambiar_contrasena():
+    global usuarioCorrecto
+    if usuarioCorrecto:
+        return render_template('changePassword.html')
+    else:
+        return redirect(url_for('login'))
 
-#Administrar
+
+@app.route('/actualizar_contrasena', methods=['POST'])
+def actualizar_contrasena():
+    global correoUsuario
+    contrasena_actual = request.form['contrasena_actual']
+    nueva_contrasena = request.form['nueva_contrasena']
+    confirmar_contrasena = request.form['confirmar_contrasena']
+
+    # Verificar que la nueva contraseña y su confirmación coincidan
+    if nueva_contrasena != confirmar_contrasena:
+        error_message = 'La nueva contraseña y su confirmación no coinciden.'
+        return render_template('changePassword.html', error_message=error_message)
+
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor(dictionary=True)
+        querySQL = "SELECT * FROM PIS.usuarios WHERE correo = %s AND clave = %s"
+        cursor.execute(querySQL, (correoUsuario, contrasena_actual))
+        usuario = cursor.fetchone()
+
+        # Asegurarse de que se hayan leído todos los resultados antes de proceder
+        cursor.fetchall()
+        cursor.close()
+
+        if usuario:
+            cursor = connection.cursor()
+            updateSQL = "UPDATE PIS.usuarios SET clave = %s WHERE correo = %s"
+            cursor.execute(updateSQL, (nueva_contrasena, correoUsuario))
+            connection.commit()
+            flash("Contraseña actualizada exitosamente", 'success')
+            return render_template('changePassword.html', success_message="Contraseña actualizada exitosamente")
+        else:
+            error_message = 'La contraseña actual es incorrecta.'
+            return render_template('changePassword.html', error_message=error_message)
+
+    except mysql.connector.Error as error:
+        flash(f"Error al actualizar la contraseña: {error}")
+        return render_template('changePassword.html', error_message=f"Error al actualizar la contraseña: {error}")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+
+# Administrar
 def obtener_ultimo_id():
     try:
         connection = connectionBD()
@@ -143,6 +206,7 @@ def obtener_ultimo_id():
         if connection.is_connected():
             cursor.close()
             connection.close()
+
 
 def crear_usuario(clave, correo, isDocente):
     try:
@@ -163,6 +227,7 @@ def crear_usuario(clave, correo, isDocente):
             cursor.close()
             connection.close()
 
+
 @app.route('/administrar', methods=['GET', 'POST'])
 def crearUsuario():
     if request.method == 'POST':
@@ -174,11 +239,13 @@ def crearUsuario():
         return redirect(url_for('usuarioCreado'))
     return render_template('registrarUsuario.html')
 
+
 @app.route('/crear_Usuario')
 def usuarioCreado():
     return render_template('registrarUsuario.html')
 
-#Obtengo los usuarios
+
+# Obtengo los usuarios
 @app.route('/modificar', methods=['GET'])
 def obtenerUsuarios():
     try:
@@ -194,7 +261,8 @@ def obtenerUsuarios():
         if connection.is_connected():
             cursor.close()
             connection.close()
-            
+
+
 @app.route('/actualizar_usuario', methods=['POST'])
 def actualizarUsuario():
     id_usuario = request.form['id_usuario']
@@ -220,7 +288,7 @@ def actualizarUsuario():
     return redirect(url_for('obtenerUsuarios'))
 
 
-#Registrar Periodos
+# Registrar Periodos
 def obtener_ultimo_id_periodo():
     try:
         connection = connectionBD()
@@ -235,6 +303,7 @@ def obtener_ultimo_id_periodo():
         if connection.is_connected():
             cursor.close()
             connection.close()
+
 
 def crear_periodo(cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesUltimoCiclo):
     try:
@@ -255,6 +324,7 @@ def crear_periodo(cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesUl
             cursor.close()
             connection.close()
 
+
 @app.route('/periodo', methods=['GET', 'POST'])
 def crearPeriodo():
     if request.method == 'POST':
@@ -266,11 +336,13 @@ def crearPeriodo():
         return redirect(url_for('periodoCreado'))
     return render_template('registrarPeriodo.html')
 
+
 @app.route('/crear_Periodo')
 def periodoCreado():
     return render_template('registrarPeriodo.html')
 
-#Obtengo los usuarios
+
+# Obtengo los usuarios
 @app.route('/modificarPeriodo', methods=['GET'])
 def obtenerPeriodos():
     try:
@@ -286,7 +358,8 @@ def obtenerPeriodos():
         if connection.is_connected():
             cursor.close()
             connection.close()
-            
+
+
 @app.route('/actualizar_periodo', methods=['POST'])
 def actualizarPeriodo():
     id = request.form['id']
@@ -310,7 +383,6 @@ def actualizarPeriodo():
             connection.close()
 
     return redirect(url_for('obtenerPeriodos'))
-
 
 
 if __name__ == '__main__':

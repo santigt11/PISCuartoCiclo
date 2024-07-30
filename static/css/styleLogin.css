@@ -107,6 +107,26 @@ form p a {
     transition: background 1s;
 }
 
+.btn-field-large {
+    width: 100%;
+    display: flex;;
+    justify-content: center;
+}
+
+.btn-field-large button {
+    margin-top: 25px;
+    flex-basis: 60%;
+    font-size: 16px;
+    background-color: #cb7f2d;
+    color: #fffefe;
+    height: 40px;
+    border-radius: 10px;
+    border: 0;
+    outline: 0;
+    cursor: pointer;
+    transition: background 1s;
+}
+
 .input-group {
     height: 200px;
 }
@@ -134,6 +154,14 @@ form p a {
     border-radius: 15px;
 }
 
+.success-message {
+    background-color: rgba(101, 208, 71, 0.73); /* Color de fondo rojo claro */
+    color: #ffffff; /* Color del texto rojo oscuro */
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 15px;
+}
+
 header {
     text-align: center;
     background-color: #eae3dc;
@@ -144,14 +172,6 @@ img {
     width: 100%;
 }
 
-/* Estilos para mensajes de éxito */
-/**.success-message {
-    background-color: #d4edda; /* Color de fondo verde claro
-    color: #155724; /* Color del texto verde oscuro
-    border: 1px solid #c3e6cb; /* Borde verde claro
-    padding: 10px;
-    margin-bottom: 10px;
-}*/
 
 /* Estilos para mensajes de advertencia */
 /**.warning-message {
