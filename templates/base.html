@@ -6,7 +6,7 @@
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <meta charset="utf-8">
     <title>{% block title %}Titulo{% endblock %}</title>
-    <link rel="icon" href="../static/img/53a67be1a52c2b76def636cb5c0c9b85dd4fa535.ico" type="image/png">
+    <link rel="icon" href="../static/img/SPD.ico" type="image/png">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="Free Website Template" name="keywords">
     <meta content="Free Website Template" name="description">
@@ -63,7 +63,8 @@
                                style="color: black; font-size: 12px;">{{ correoUsuario }}</a>
                             <hr class="dropdown-divider" style="border-top: 1px solid #414141;">
                         </li>
-                        <li><a class="dropdown-item" href="/login">Cerrar Sesión</a></li>
+                        <li><a class="dropdown-item" href="/cambiar_contrasena">Cambiar Contraseña</a></li>
+                        <li><a class="dropdown-item" href="/signout">Cerrar Sesión</a></li>
                     </ul>
                 </li>
 
@@ -138,7 +139,8 @@
 <!-- Template Javascript -->
 <script src="../static/js/main.js"></script>
 <script src="../static/js/prediccion.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js"></script>
 <script>
     $(document).ready(function () {
         $(".testimonial-carousel").owlCarousel({

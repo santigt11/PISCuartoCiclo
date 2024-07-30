@@ -1,18 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="utf-8">
     <title>Predicción</title>
-    <link rel="icon" href="../static/img/icon-predict.ico" type="image/png">
+    <link rel="icon" href="../static/img/SPD.ico" type="image/png">
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <meta content="Free Website Template" name="keywords">
     <meta content="Free Website Template" name="description">
-
-    <!-- Favicon -->
-    <link href="img/favicon.ico" rel="icon">
 
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.gstatic.com">
@@ -68,7 +65,8 @@
                                style="color: black; font-size: 12px;">{{ correoUsuario }}</a>
                             <hr class="dropdown-divider" style="border-top: 1px solid #414141;">
                         </li>
-                        <li><a class="dropdown-item" href="/login">Cerrar Sesión</a></li>
+                        <li><a class="dropdown-item" href="/cambiar_contrasena">Cambiar Contraseña</a></li>
+                        <li><a class="dropdown-item" href="/signout">Cerrar Sesión</a></li>
                     </ul>
                 </li>
 
@@ -109,32 +107,63 @@
 <div class="container py-5">
     <div class="container">
         <div class="section-title">
-            <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">MODELO DE PREDICCIÓN DE LA
-                DESERCIÓN</h4>
+            <h4 class="text-primary text-uppercase" style="letter-spacing: 5px;">MODELO DE PREDICCIÓN DE LA DESERCIÓN</h4>
             <h1 class="display-4">INGRESE LOS PARÁMETROS</h1>
         </div>
         <form id="rungeKuttaForm">
+            <h5 style="color: #712225; font-weight: bolder !important; letter-spacing: 0.75px;">INTERVALO DE PREDICCION:</h5>
             <div class="form-row form-container">
                 <div class="form-group">
                     <label for="año_inicio">Año de Inicio</label>
-                    <input type="number" class="form-control" id="año_inicio" required>
+                    <input type="number" class="form-control" id="año_inicio" required value="2003">
                 </div>
                 <div class="form-group">
                     <label for="año_fin">Año Final</label>
                     <input type="number" class="form-control" id="año_fin" required>
                 </div>
-                <div style="display: flex; justify-content: flex-end;">
-                        <button type="submit" class="btn btn-primary" id="calcularBtn">CALCULAR</button>
-                        <button type="button" class="btn btn-success ml-3" id="downloadReportBtn" style="display: none;">DESCARGAR REPORTE</button>
-                        <button type="button" class="btn btn-primary ml-3" id="newPredictionBtn" style="display: none;">AGREGAR AL INFORME</button>
+            </div>
+            <h5 style="color: #712225; font-weight: bolder !important; letter-spacing: 0.75px;">FILTRO POR:</h5>
+            <div class="form-row form-container">
+                <div class="form-group">
+                    <label for="opcion">Género</label>
+                    <select class="form-control" id="opcion" required>
+                        <option value="general">Ninguno</option>
+                        <option value="hombres">Masculino</option>
+                        <option value="mujeres">Femenino</option>
+                    </select>
                 </div>
-                <div id="errorContainer" class="message-container">
-                {% if error_message %}
-                <div class="message error-message">{{ error_message }}</div>
-                {% endif %}
+                <div class="form-group">
+                    <label for="factor">Factor de Deserción</label>
+                    <select class="form-control" id="factor" required>
+                        <option value="ninguno">Ninguno</option>
+                        <option value="economico">Económico</option>
+                        <option value="psicologico">Psicológico</option>
+                    </select>
                 </div>
-            </form>
-        </div>
+            </div>
+            <h5 style="color: #712225; font-weight: bolder !important; letter-spacing: 0.75px;">GRAFICA:</h5>
+            <div class="form-row form-container">
+                <div class="form-group">
+                    <select class="form-control" id="visualizar" required>
+                        <option value="unificada">Unificada</option>
+                        <option value="separada">Separada</option>
+                    </select>
+                </div>
+            </div>
+            <div id="graph-container" class="graph-report-container">
+                <canvas id="myChart" style="width: 100%; height: 400px;"></canvas>
+            </div>
+            <div style="display: flex; justify-content: flex-end;">
+                    <button type="submit" class="btn btn-primary" id="calcularBtn">CALCULAR</button>
+                    <button type="button" class="btn btn-success ml-3" id="downloadReportBtn" style="display: none;">DESCARGAR REPORTE</button>
+                    <button type="button" class="btn btn-primary ml-3" id="newPredictionBtn" style="display: none;">AGREGAR AL INFORME</button>
+            </div>
+            <div id="errorContainer" class="message-container">
+            {% if error_message %}
+            <div class="message error-message">{{ error_message }}</div>
+            {% endif %}
+            </div>
+        </form>
     </div>
 </div>
 <!-- Input Form End -->
