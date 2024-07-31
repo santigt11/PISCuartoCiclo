@@ -4,43 +4,55 @@
 <a href="/modificarPeriodo" class="nav-item nav-link">Modificar</a>
 {% endblock %}
 
-
 {% block title %}Periodo{% endblock %}
 
 {% block titulo %}Gestión de los Periodos{% endblock %}
 
-
 {% block content %}
-
 <head>
     <link rel="stylesheet" href="../static/css/registrarPeriodo.css">
     <form class="form-container-title">
         <h1>Crear Nuevo Periodo</h1>
     </form>
-
 </head>
 
 <form action="/periodo" method="POST" class="form-container">
+    <div class="form-group">
+        <label for="numAnio">Año:</label>
+        <select id="numAnio" name="numAnio" required>
+            {% if anios %}
+                {% for anio in anios %}
+                    <option value="{{ anio }}">{{ anio }}</option>
+                {% endfor %}
+            {% else %}
+                <option value="">No hay años registrados</option>
+            {% endif %}
+        </select><br><br>
+    </div>
 
     <div class="form-group">
         <label for="cantEstudiantesHombre">Cantidad de Estudiantes Hombres:</label>
-        <input type="number" min="0" id="correo" name="cantEstudiantesHombre" required><br><br>
+        <input type="number" min="0" id="cantEstudiantesHombre" name="cantEstudiantesHombre" required><br><br>
     </div>
 
     <div class="form-group">
         <label for="cantEstudiantesMujer">Cantidad de Estudiantes Mujeres:</label>
-        <input type="number" min="0" id="clave" name="cantEstudiantesMujer" required><br><br>
+        <input type="number" min="0" id="cantEstudiantesMujer" name="cantEstudiantesMujer" required><br><br>
     </div>
 
     <div class="form-group">
-        <label for="cantEstudiantesUltimoCiclo">Cantidad de Estudiantes del Ultimo ciclo:</label>
-        <input type="number" min="0" id="clave" name="cantEstudiantesUltimoCiclo" required><br><br>
+        <label for="cantEstudiantesEgresados">Cantidad de Estudiantes Egresados:</label>
+        <input type="number" min="0" id="cantEstudiantesEgresados" name="cantEstudiantesEgresados" required><br><br>
+    </div>
+
+    <div class="form-group">
+        <label for="cantEstudiantesDesertores">Cantidad de Estudiantes Desertores:</label>
+        <input type="number" min="0" id="cantEstudiantesDesertores" name="cantEstudiantesDesertores" required><br><br>
     </div>
 
     <div class="form-group">
         <input type="submit" value="Registrar Periodo">
     </div>
-    
 </form>
 
 {% endblock %}

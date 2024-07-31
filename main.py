@@ -346,7 +346,7 @@ def obtener_ultimo_numAnio():
             cursor.close()
             connection.close()
 
-def crear_anio(numAnio, totalEstudiantes, totalEgresados, totalDesertores):
+def crear_anio(numAnio):
     try:
         connection = connectionBD()
         cursor = connection.cursor()
@@ -354,9 +354,9 @@ def crear_anio(numAnio, totalEstudiantes, totalEgresados, totalDesertores):
         cursor.execute("SELECT COUNT(*) FROM pis.anio WHERE numAnio = %s", (numAnio,))
         if cursor.fetchone()[0] > 0:
             return "El año ya existe"
-        
-        sql = "INSERT INTO pis.anio (numAnio, totalEstudiantes, totalEgresados, totalDesertores) VALUES (%s, %s, %s, %s)"
-        valores = (numAnio, totalEstudiantes, totalEgresados, totalDesertores)
+        sql = "INSERT INTO pis.anio (numAnio) VALUES (%s)"
+        valores = (numAnio,)
+        print("hola")
         cursor.execute(sql, valores)
         connection.commit()
         return f"Año creado exitosamente con número: {numAnio}"
@@ -372,10 +372,8 @@ def crear_anio(numAnio, totalEstudiantes, totalEgresados, totalDesertores):
 def crearAnio():
     if request.method == 'POST':
         numAnio = int(request.form['numAnio'])
-        totalEstudiantes = int(request.form['totalEstudiantes'])
-        totalEgresados = int(request.form['totalEgresados'])
-        totalDesertores = int(request.form['totalDesertores'])
-        resultado = crear_anio(numAnio, totalEstudiantes, totalEgresados, totalDesertores)
+        print(numAnio)
+        resultado = crear_anio(numAnio)
         flash(resultado)
         return redirect(url_for('anioCreado'))
     return render_template('registrarAnio.html')
@@ -481,7 +479,6 @@ def crearPeriodo():
         cantEstudiantesMujer = int(request.form['cantEstudiantesMujer'])
         cantEstudiantesEgresados = int(request.form['cantEstudiantesEgresados'])
         cantEstudiantesDesertores = int(request.form['cantEstudiantesDesertores'])
-        cantEstudiantesMatriculados = int(request.form['cantEstudiantesMatriculados'])
         resultado = crear_periodo(numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores)
         flash(resultado)
         return redirect(url_for('periodoCreado'))
@@ -490,7 +487,7 @@ def crearPeriodo():
     try:
         connection = connectionBD()
         cursor = connection.cursor()
-        cursor.execute("SELECT DISTINCT numAnio FROM periodo ORDER BY numAnio")
+        cursor.execute("SELECT DISTINCT numAnio FROM anio ORDER BY numAnio")
         anios = cursor.fetchall()
     except mysql.connector.Error as error:
         flash(f"Error al obtener años: {error}")
@@ -500,9 +497,13 @@ def crearPeriodo():
             cursor.close()
             connection.close()
 
+    # Transformar la lista de tuplas a una lista de valores enteros
+    anios = [anio[0] for anio in anios]
+
     return render_template('registrarPeriodo.html', anios=anios)
+
     
-@app.route('/crear_Periodo')
+@app.route('/periodo')
 def periodoCreado():
     return render_template('registrarPeriodo.html')
 
@@ -514,15 +515,25 @@ def obtenerPeriodos():
         cursor = connection.cursor(dictionary=True)
         cursor.execute("SELECT * FROM periodo")
         periodos = cursor.fetchall()
-        return render_template('modificarPeriodo.html', periodos=periodos)
+
+        # Obtener años ya registrados
+        cursor.execute("SELECT DISTINCT numAnio FROM anio ORDER BY numAnio")
+        anios = cursor.fetchall()
     except mysql.connector.Error as error:
-        print(f"Error al obtener los periodos: {error}")
-        return "Error al obtener los periodos"
+        print(f"Error al obtener los periodos o años: {error}")
+        flash("Error al obtener los periodos o años")
+        periodos = []
+        anios = []
     finally:
         if connection.is_connected():
             cursor.close()
             connection.close()
-            
+
+    # Extraer los años de la lista de diccionarios
+    anios = [anio['numAnio'] for anio in anios]
+
+    return render_template('modificarPeriodo.html', periodos=periodos, anios=anios)
+
 @app.route('/actualizar_periodo', methods=['POST'])
 def actualizarPeriodo():
     numPeriodo = request.form['numPeriodo']
@@ -548,6 +559,7 @@ def actualizarPeriodo():
             connection.close()
 
     return redirect(url_for('obtenerPeriodos'))
+
 
 
 if __name__ == '__main__':
