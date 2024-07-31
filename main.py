@@ -88,18 +88,52 @@ def principal():
 def informacion():
     return render_template('about.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
+
+# Add this new route
+@app.route('/get_total_students/<int:year>', methods=['GET'])
+def get_total_students(year):
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor(dictionary=True)
+
+        # First, try to get the total from the anio table
+        cursor.execute("SELECT totalEstudiantes FROM anio WHERE numAnio = %s", (year,))
+        result = cursor.fetchone()
+
+        if result:
+            total = result['totalEstudiantes']
+        else:
+            # If not found in anio table, calculate from periodo table
+            cursor.execute("""
+                SELECT SUM(cantEstudiantesTotal) as total
+                FROM periodo
+                WHERE numAnio = %s
+            """, (year,))
+            result = cursor.fetchone()
+            total = result['total'] if result and result['total'] is not None else 0
+
+        return jsonify({'total': total})
+    except mysql.connector.Error as error:
+        print(f"Error al obtener el total de estudiantes: {error}")
+        return jsonify({'error': str(error)}), 500
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
 # Ruta para calcular los datos con el método de Euler
 @app.route('/calculate_rungeKutta', methods=['POST'])
 def calculate_rungeKutta():
     data = request.get_json()
-    estudiantes_inicial = int(data['estudiantes_inicial'])
     año_inicio = int(data['año_inicio'])
     año_fin = int(data['año_fin'])
     opcion = data['opcion']
     factor = data['factor']
+    estudiantes_inicial = int(data['estudiantes_inicial'])
 
     simulator = RungeKuttaPrediccion()
-    estudiantes, nuevos_ingresos, desertores = simulator.simular_ciclos(estudiantes_inicial, año_inicio, año_fin, opcion,factor)
+    estudiantes, nuevos_ingresos, desertores = simulator.simular_ciclos(estudiantes_inicial, año_inicio, año_fin,
+                                                                        opcion, factor)
 
     años = list(range(año_inicio, año_fin + 1))
 
@@ -151,7 +185,7 @@ def crear_usuario(clave, correo, isDocente):
         nuevo_id = obtener_ultimo_id()
         if nuevo_id is None:
             return "Error al generar nuevo ID"
-        sql = "INSERT INTO usuarios (id_Usuario, clave, correo, isDocente) VALUES (%s, %s, %s, %s)"
+        sql = "INSERT INTO usuarios (id_Usuario, clave, correo, isAdmin) VALUES (%s, %s, %s, %s)"
         valores = (nuevo_id, clave, correo, isDocente)
         cursor.execute(sql, valores)
         connection.commit()
@@ -205,7 +239,7 @@ def actualizarUsuario():
     try:
         connection = connectionBD()
         cursor = connection.cursor()
-        sql = "UPDATE usuarios SET clave = %s, correo = %s, isDocente = %s WHERE id_Usuario = %s"
+        sql = "UPDATE usuarios SET clave = %s, correo = %s, isAdmin = %s WHERE id_Usuario = %s"
         valores = (clave, correo, isDocente, id_usuario)
         cursor.execute(sql, valores)
         connection.commit()
@@ -242,7 +276,7 @@ def crear_anio(totalEstudiantes, totalEgresados, totalDesertores, totalEstudiant
         nuevo_numAnio = obtener_ultimo_numAnio()
         if nuevo_numAnio is None:
             return "Error al generar nuevo número de año"
-        sql = "INSERT INTO anio (numAnio, totalEstudiantes, totalEgresados, totalDesertores, totalEstudiantesMatriculados) VALUES (%s, %s, %s, %s, %s)"
+        sql = "INSERT INTO anio (numAnio, totalEstudiantes, totalEgresados, totalDesertores) VALUES (%s, %s, %s, %s)"
         valores = (nuevo_numAnio, totalEstudiantes, totalEgresados, totalDesertores, totalEstudiantesMatriculados)
         cursor.execute(sql, valores)
         connection.commit()
@@ -298,7 +332,7 @@ def actualizarAnio():
     try:
         connection = connectionBD()
         cursor = connection.cursor()
-        sql = "UPDATE anio SET totalEstudiantes = %s, totalEgresados = %s, totalDesertores = %s, totalEstudiantesMatriculados = %s WHERE numAnio = %s"
+        sql = "UPDATE anio SET totalEstudiantes = %s, totalEgresados = %s, totalDesertores = %s = WHERE numAnio = %s"
         valores = (totalEstudiantes, totalEgresados, totalDesertores, totalEstudiantesMatriculados, numAnio)
         cursor.execute(sql, valores)
         connection.commit()
@@ -335,7 +369,7 @@ def crear_periodo(numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstu
         nuevo_numPeriodo = obtener_ultimo_numPeriodo(numAnio)
         if nuevo_numPeriodo is None:
             return "Error al generar nuevo número de periodo"
-        sql = "INSERT INTO periodo (numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, cantEstudiantesMatriculados) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+        sql = "INSERT INTO periodo (numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, cantEstudiantesTotal) VALUES (%s, %s, %s, %s, %s, %s, %s)"
         valores = (nuevo_numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, cantEstudiantesMatriculados)
         cursor.execute(sql, valores)
         connection.commit()
