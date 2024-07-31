@@ -545,22 +545,15 @@ def actualizarPeriodo():
     cantEstudiantesEgresados = request.form['cantEstudiantesEgresados']
     cantEstudiantesDesertores = request.form['cantEstudiantesDesertores']
 
-        print(f"numPeriodo: {numPeriodo}, numAnio: {numAnio}, cantEstudiantesHombre: {cantEstudiantesHombre}, cantEstudiantesMujer: {cantEstudiantesMujer}, cantEstudiantesEgresados: {cantEstudiantesEgresados}, cantEstudiantesDesertores: {cantEstudiantesDesertores}")
-
+    try:
         connection = connectionBD()
         cursor = connection.cursor()
         sql = "UPDATE periodo SET cantEstudiantesHombre = %s, cantEstudiantesMujer = %s, cantEstudiantesEgresados = %s, cantEstudiantesDesertores = %s WHERE numPeriodo = %s AND numAnio = %s"
         valores = (cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, numPeriodo, numAnio)
         cursor.execute(sql, valores)
         connection.commit()
-
-        print(f"Filas afectadas: {cursor.rowcount}")
-
-        if cursor.rowcount == 0:
-            flash("No se encontró el período para actualizar")
-        else:
-            flash("Período actualizado exitosamente")
-    except (ValueError, mysql.connector.Error) as error:
+        flash("Período actualizado exitosamente")
+    except mysql.connector.Error as error:
         flash(f"Error al actualizar período: {error}")
     finally:
         if connection.is_connected():
