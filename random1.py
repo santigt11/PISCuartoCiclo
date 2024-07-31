@@ -1,5 +1,5 @@
 import random as random1
-def generar_numero_aleatorio(minimo=30, maximo=30):
+def generar_numero_aleatorio(minimo=20, maximo=30):
 
     if minimo > maximo:
         raise ValueError("El valor mínimo debe ser menor o igual al valor máximo")

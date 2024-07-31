@@ -4,7 +4,7 @@ def connectionBD():
     mydb = mysql.connector.connect(
         host="localhost",
         user = "root",
-        password = "1106017716",
+        password = "pis1809",
         database = "PIS"
     )
 
