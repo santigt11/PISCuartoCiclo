@@ -462,15 +462,34 @@ def crear_periodo(numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstu
             cursor.close()
             connection.close()
 
+
 @app.route('/periodo', methods=['GET', 'POST'])
 def crearPeriodo():
     if request.method == 'POST':
+        # Obtener el máximo ID_Periodo y aumentarlo en 1
+        try:
+            connection = connectionBD()
+            cursor = connection.cursor()
+            cursor.execute("SELECT MAX(ID_Periodo) FROM periodo")
+            max_id = cursor.fetchone()[0]
+            new_id = 1 if max_id is None else max_id + 1
+        except mysql.connector.Error as error:
+            flash(f"Error al obtener el máximo ID_Periodo: {error}")
+            return redirect(url_for('periodoCreado'))
+        finally:
+            if connection.is_connected():
+                cursor.close()
+                connection.close()
+
         numAnio = int(request.form['numAnio'])
         cantEstudiantesHombre = int(request.form['cantEstudiantesHombre'])
         cantEstudiantesMujer = int(request.form['cantEstudiantesMujer'])
         cantEstudiantesEgresados = int(request.form['cantEstudiantesEgresados'])
         cantEstudiantesDesertores = int(request.form['cantEstudiantesDesertores'])
-        resultado = crear_periodo(numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores)
+
+        # Pasar el nuevo ID_Periodo a la función crear_periodo
+        resultado = crear_periodo(new_id, numAnio, cantEstudiantesHombre, cantEstudiantesMujer,
+                                  cantEstudiantesEgresados, cantEstudiantesDesertores)
         flash(resultado)
         return render_template('registrarPeriodo.html',usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
     
@@ -502,11 +521,11 @@ def obtenerPeriodos():
     try:
         connection = connectionBD()
         cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM periodo ORDER BY numAnio")
+        cursor.execute("SELECT * FROM periodo ORDER BY numAnio, numPeriodo")  # Cambiado aquí
         periodos = cursor.fetchall()
 
         # Obtener años ya registrados
-        cursor.execute("SELECT DISTINCT numAnio FROM anio ORDER BY numAnio")
+        cursor.execute("SELECT DISTINCT numAnio FROM anio ORDER BY numAnio")  # Cambiado aquí
         anios = cursor.fetchall()
     except mysql.connector.Error as error:
         print(f"Error al obtener los periodos o años: {error}")
