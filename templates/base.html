@@ -63,11 +63,32 @@
                                style="color: black; font-size: 12px;">{{ correoUsuario }}</a>
                             <hr class="dropdown-divider" style="border-top: 1px solid #414141;">
                         </li>
+                        {% if isAdmin %}
+                        <li><a class="dropdown-item" href="/administrar">Administrar Usuarios</a></li>
+                        <li><a class="dropdown-item" href="/anio">Administrar Año Academico</a></li>
+                        <li><a class="dropdown-item" href="/periodo">Administrar Periodo Academico</a></li>
+                        <hr class="dropdown-divider" style="border-top: 1px solid #414141;">
+                        {% endif %}
                         <li><a class="dropdown-item" href="/cambiar_contrasena">Cambiar Contraseña</a></li>
                         <li><a class="dropdown-item" href="/signout">Cerrar Sesión</a></li>
                     </ul>
                 </li>
+                {% if isAdmin %}
+                <style>
+                    .custom-dropdown-menu {
+                        position: absolute;
+                        right: 0;
+                        top: 0;
+                        left: auto;
+                        transform: translateY(20%);
+                        border-radius: 8px;
+                    }
 
+                    .custom-dropdown-menu .dropdown-item:hover {
+                        color: #cb7f2d;
+                    }
+                </style>
+                {% else %}
                 <style>
                     .custom-dropdown-menu {
                         position: absolute;
@@ -82,6 +103,7 @@
                         color: #cb7f2d;
                     }
                 </style>
+                {% endif %}
                 {% else %}
                 <a href="/login" class="btn btn-outline-warning" role="button">Iniciar Sesión</a>
                 {% endif %}

@@ -12,6 +12,7 @@ app.secret_key = 'hola'
 # Declaración de las variables globales
 usuarioCorrecto = False
 correoUsuario = None
+isAdmin = False
 
 
 # Ruta para mostrar el formulario de login
@@ -19,9 +20,11 @@ correoUsuario = None
 def login():
     global usuarioCorrecto
     global correoUsuario
+    global isAdmin
     usuarioCorrecto = False
     correoUsuario = None
-    return render_template('login.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+    isAdmin = False
+    return render_template('login.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario, isAdmin=isAdmin)
 
 
 # Cerrar Sesion
@@ -29,9 +32,11 @@ def login():
 def signout():
     global usuarioCorrecto
     global correoUsuario
+    global isAdmin
     usuarioCorrecto = False
     correoUsuario = None
-    return render_template('indexDocente.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+    isAdmin = False
+    return render_template('indexDocente.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario, isAdmin=isAdmin)
 
 
 # Ruta para mostrar el formulario de cambio de contraseña
@@ -91,6 +96,7 @@ def actualizar_contrasena():
 def signin():
     global usuarioCorrecto  # Indicamos que vamos a usar la variable global
     global correoUsuario
+    global isAdmin
 
     # Crear instancia de Subject
     subject = Subject()
@@ -129,14 +135,15 @@ def signin():
             break
     if usuarioCorrecto:
         if usuario['isAdmin'] == 1:
-            return redirect(url_for('administrador'))
+            isAdmin = True
+            return redirect(url_for('principal'))
         else:
             return redirect(url_for('principal'))  # Redirige a otra vista si las credenciales son correctas
     else:
         error_message = 'Credenciales incorrectas. Intenta de nuevo.'
         subject.notify(error_message)  # Notificar a los observadores
         return render_template('login.html', error_message=error_message, usuarioCorrecto=usuarioCorrecto,
-                               correoUsuario=correoUsuario)
+                               correoUsuario=correoUsuario, isAdmin=isAdmin)
 
 
 def contarUsuarios():
@@ -156,7 +163,7 @@ def obtener_estudiantes():
 # Ruta para la página principal
 @app.route('/')
 def principal():
-    return render_template('indexDocente.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+    return render_template('indexDocente.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario, isAdmin=isAdmin)
 
 
 @app.route('/acercaDe')
@@ -167,7 +174,10 @@ def informacion():
 # Ruta para el administrador
 @app.route('/administrador')
 def administrador():
-    return render_template('indexAdministrador.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+    global usuarioCorrecto
+    global correoUsuario
+    global isAdmin
+    return render_template('indexAdministrador.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario, isAdmin=isAdmin)
 
 
 # Ruta para calcular los datos con el método de Euler
@@ -285,14 +295,17 @@ def crear_usuario(clave, correo, isAdmin):
 # Ruta para crear un nuevo usuario
 @app.route('/administrar', methods=['GET', 'POST'])
 def crearUsuario():
+    global usuarioCorrecto
+    global correoUsuario
+    global isAdmin
     if request.method == 'POST':
         clave = request.form['clave']
         correo = request.form['correo']
         isAdmin = request.form.get('isDocente', '0')
         resultado = crear_usuario(clave, correo, isAdmin)
         flash(resultado)
-        return render_template('registrarUsuario.html',usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
-    return render_template('registrarUsuario.html',usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+        return render_template('registrarUsuario.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario, isAdmin=isAdmin)
+    return render_template('registrarUsuario.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario, isAdmin=isAdmin)
 
 # Ruta para mostrar la creación de usuario exitosa
 @app.route('/crear_Usuario')
@@ -303,19 +316,25 @@ def usuarioCreado():
 # Ruta para obtener usuarios y mostrar la página de modificación
 @app.route('/modificar', methods=['GET'])
 def obtenerUsuarios():
-    try:
-        connection = connectionBD()
-        cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM usuarios")
-        usuarios = cursor.fetchall()
-        return render_template('modificarUsuario.html', usuarios = usuarios,usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
-    except mysql.connector.Error as error:
-        print(f"Error al obtener los usuarios: {error}")
-        return "Error al obtener los usuarios"
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+    global usuarioCorrecto
+    global correoUsuario
+    global isAdmin
+    if isAdmin == False:
+        return redirect(url_for('login'))
+    else:
+        try:
+            connection = connectionBD()
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM usuarios")
+            usuarios = cursor.fetchall()
+            return render_template('modificarUsuario.html', usuarios = usuarios,usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario, isAdmin=isAdmin)
+        except mysql.connector.Error as error:
+            print(f"Error al obtener los usuarios: {error}")
+            return "Error al obtener los usuarios"
+        finally:
+            if connection.is_connected():
+                cursor.close()
+                connection.close()
 
 
 # Ruta para actualizar un usuario existente
@@ -385,13 +404,19 @@ def crear_anio(numAnio):
 
 @app.route('/anio', methods=['GET', 'POST'])
 def crearAnio():
-    if request.method == 'POST':
-        numAnio = int(request.form['numAnio'])
-        print(numAnio)
-        resultado = crear_anio(numAnio)
-        flash(resultado)
-        return render_template('registrarAnio.html',usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
-    return render_template('registrarAnio.html',usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+    global usuarioCorrecto
+    global correoUsuario
+    global isAdmin
+    if isAdmin == False:
+        return redirect(url_for('login'))
+    else:
+        if request.method == 'POST':
+            numAnio = int(request.form['numAnio'])
+            print(numAnio)
+            resultado = crear_anio(numAnio)
+            flash(resultado)
+            return render_template('registrarAnio.html',usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario, isAdmin=isAdmin)
+        return render_template('registrarAnio.html',usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario, isAdmin=isAdmin)
 
 
 @app.route('/crear_Anio')
@@ -401,19 +426,25 @@ def anioCreado():
 #Modificar Anio
 @app.route('/modificarAnio', methods=['GET'])
 def obtenerAnios():
-    try:
-        connection = connectionBD()
-        cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM anio")
-        anios = cursor.fetchall()
-        return render_template('modificarAnio.html', anios=anios, usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
-    except mysql.connector.Error as error:
-        print(f"Error al obtener los años: {error}")
-        return "Error al obtener los años"
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+    global usuarioCorrecto
+    global correoUsuario
+    global isAdmin
+    if isAdmin == False:
+        return redirect(url_for('login'))
+    else:
+        try:
+            connection = connectionBD()
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM anio")
+            anios = cursor.fetchall()
+            return render_template('modificarAnio.html', anios=anios, usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario, isAdmin=isAdmin)
+        except mysql.connector.Error as error:
+            print(f"Error al obtener los años: {error}")
+            return "Error al obtener los años"
+        finally:
+            if connection.is_connected():
+                cursor.close()
+                connection.close()
 
 
 @app.route('/actualizar_anio', methods=['POST'])
@@ -493,55 +524,61 @@ def crear_periodo(numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstu
 
 @app.route('/periodo', methods=['GET', 'POST'])
 def crearPeriodo():
-    if request.method == 'POST':
-        numAnio = int(request.form['numAnio'])
-        cantEstudiantesHombre = int(request.form['cantEstudiantesHombre'])
-        cantEstudiantesMujer = int(request.form['cantEstudiantesMujer'])
-        cantEstudiantesEgresados = int(request.form['cantEstudiantesEgresados'])
-        cantEstudiantesDesertores = int(request.form['cantEstudiantesDesertores'])
+    global usuarioCorrecto
+    global correoUsuario
+    global isAdmin
+    if isAdmin == False:
+        return redirect(url_for('login'))
+    else:
+        if request.method == 'POST':
+            numAnio = int(request.form['numAnio'])
+            cantEstudiantesHombre = int(request.form['cantEstudiantesHombre'])
+            cantEstudiantesMujer = int(request.form['cantEstudiantesMujer'])
+            cantEstudiantesEgresados = int(request.form['cantEstudiantesEgresados'])
+            cantEstudiantesDesertores = int(request.form['cantEstudiantesDesertores'])
 
+            try:
+                connection = connectionBD()
+                cursor = connection.cursor()
+
+                # Obtener el último numPeriodo para este año
+                cursor.execute("SELECT MAX(numPeriodo) FROM periodo WHERE numAnio = %s", (numAnio,))
+                ultimo_periodo = cursor.fetchone()[0]
+                nuevo_numPeriodo = 1 if ultimo_periodo is None else ultimo_periodo + 1
+
+                # Insertar el nuevo período
+                sql = """INSERT INTO periodo (numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer, 
+                         cantEstudiantesEgresados, cantEstudiantesDesertores) 
+                         VALUES (%s, %s, %s, %s, %s, %s)"""
+                valores = (nuevo_numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer,
+                           cantEstudiantesEgresados, cantEstudiantesDesertores)
+                cursor.execute(sql, valores)
+                connection.commit()
+                flash(f"Periodo {nuevo_numPeriodo} del año {numAnio} creado exitosamente")
+            except mysql.connector.Error as error:
+                flash(f"Error al crear periodo: {error}")
+            finally:
+                if connection.is_connected():
+                    cursor.close()
+                    connection.close()
+
+            return redirect(url_for('periodoCreado'))
+
+        # Obtener años ya registrados
         try:
             connection = connectionBD()
             cursor = connection.cursor()
-
-            # Obtener el último numPeriodo para este año
-            cursor.execute("SELECT MAX(numPeriodo) FROM periodo WHERE numAnio = %s", (numAnio,))
-            ultimo_periodo = cursor.fetchone()[0]
-            nuevo_numPeriodo = 1 if ultimo_periodo is None else ultimo_periodo + 1
-
-            # Insertar el nuevo período
-            sql = """INSERT INTO periodo (numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer, 
-                     cantEstudiantesEgresados, cantEstudiantesDesertores) 
-                     VALUES (%s, %s, %s, %s, %s, %s)"""
-            valores = (nuevo_numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer,
-                       cantEstudiantesEgresados, cantEstudiantesDesertores)
-            cursor.execute(sql, valores)
-            connection.commit()
-            flash(f"Periodo {nuevo_numPeriodo} del año {numAnio} creado exitosamente")
+            cursor.execute("SELECT DISTINCT numAnio FROM anio ORDER BY numAnio")
+            anios = [anio[0] for anio in cursor.fetchall()]
         except mysql.connector.Error as error:
-            flash(f"Error al crear periodo: {error}")
+            flash(f"Error al obtener años: {error}")
+            anios = []
         finally:
             if connection.is_connected():
                 cursor.close()
                 connection.close()
 
-        return redirect(url_for('periodoCreado'))
-
-    # Obtener años ya registrados
-    try:
-        connection = connectionBD()
-        cursor = connection.cursor()
-        cursor.execute("SELECT DISTINCT numAnio FROM anio ORDER BY numAnio")
-        anios = [anio[0] for anio in cursor.fetchall()]
-    except mysql.connector.Error as error:
-        flash(f"Error al obtener años: {error}")
-        anios = []
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
-
-    return render_template('registrarPeriodo.html', anios=anios)
+        return render_template('registrarPeriodo.html', anios=anios, usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario, isAdmin=isAdmin)
 
 
 @app.route('/actualizar_periodo', methods=['POST'])
@@ -577,34 +614,46 @@ def actualizarPeriodo():
 
 @app.route('/periodo')
 def periodoCreado():
-    return render_template('registrarPeriodo.html')
+    global usuarioCorrecto
+    global correoUsuario
+    global isAdmin
+    if isAdmin == False:
+        return redirect(url_for('login'))
+    else:
+        return render_template('registrarPeriodo.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario, isAdmin=isAdmin)
 
 #Modificar Periodo
 @app.route('/modificarPeriodo', methods=['GET'])
 def obtenerPeriodos():
-    try:
-        connection = connectionBD()
-        cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM periodo ORDER BY numAnio, numPeriodo")  # Cambiado aquí
-        periodos = cursor.fetchall()
+    global usuarioCorrecto
+    global correoUsuario
+    global isAdmin
+    if isAdmin == False:
+        return redirect(url_for('login'))
+    else:
+        try:
+            connection = connectionBD()
+            cursor = connection.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM periodo ORDER BY numAnio, numPeriodo")  # Cambiado aquí
+            periodos = cursor.fetchall()
 
-        # Obtener años ya registrados
-        cursor.execute("SELECT DISTINCT numAnio FROM anio ORDER BY numAnio")  # Cambiado aquí
-        anios = cursor.fetchall()
-    except mysql.connector.Error as error:
-        print(f"Error al obtener los periodos o años: {error}")
-        flash("Error al obtener los periodos o años")
-        periodos = []
-        anios = []
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+            # Obtener años ya registrados
+            cursor.execute("SELECT DISTINCT numAnio FROM anio ORDER BY numAnio")  # Cambiado aquí
+            anios = cursor.fetchall()
+        except mysql.connector.Error as error:
+            print(f"Error al obtener los periodos o años: {error}")
+            flash("Error al obtener los periodos o años")
+            periodos = []
+            anios = []
+        finally:
+            if connection.is_connected():
+                cursor.close()
+                connection.close()
 
-    # Extraer los años de la lista de diccionarios
-    anios = [anio['numAnio'] for anio in anios]
+        # Extraer los años de la lista de diccionarios
+        anios = [anio['numAnio'] for anio in anios]
 
-    return render_template('modificarPeriodo.html', periodos=periodos, anios=anios,usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario )
+        return render_template('modificarPeriodo.html', periodos=periodos, anios=anios,usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario, isAdmin=isAdmin)
 
 
 if __name__ == '__main__':
