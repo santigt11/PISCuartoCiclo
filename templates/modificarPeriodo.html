@@ -30,7 +30,6 @@
         </thead>
         <tbody>
         {% for periodo in periodos %}
-        <
         <tr>
             <td>{{ periodo.numPeriodo }}</td>
             <td>{{ periodo.numAnio }}</td>
@@ -40,64 +39,67 @@
             <td>{{ periodo.cantEstudiantesDesertores }}</td>
             <td>
                 <button class="btn btn-primary" data-toggle="modal"
-                        data-target="#editarPeriodoModal{{ periodo.numPeriodo }}">Editar
+                        data-target="#editarPeriodoModal{{ periodo.numPeriodo }}_{{ periodo.numAnio }}">Editar
                 </button>
             </td>
         </tr>
-
-        <!-- Modal para editar período -->
-        <div class="modal fade" id="editarPeriodoModal{{ periodo.numPeriodo }}" tabindex="-1" role="dialog"
-             aria-labelledby="editarPeriodoModalLabel{{ periodo.numPeriodo }}" aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editarPeriodoModalLabel{{ periodo.numPeriodo }}">Modificar
-                            Período</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <form action="{{ url_for('actualizarPeriodo') }}" method="post">
-                        <div class="modal-body">
-                            <input type="hidden" name="numPeriodo" value="{{ periodo.numPeriodo }}">
-
-                            <div class="form-group">
-                                <label for="cantEstudiantesHombre">Cantidad de Estudiantes Hombres</label>
-                                <input type="number" min="0" class="form-control" name="cantEstudiantesHombre"
-                                       value="{{ periodo.cantEstudiantesHombre }}" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="cantEstudiantesMujer">Cantidad de Estudiantes Mujeres</label>
-                                <input type="number" min="0" class="form-control" name="cantEstudiantesMujer"
-                                       value="{{ periodo.cantEstudiantesMujer }}" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="cantEstudiantesEgresados">Cantidad de Estudiantes Egresados</label>
-                                <input type="number" min="0" class="form-control" name="cantEstudiantesEgresados"
-                                       value="{{ periodo.cantEstudiantesEgresados }}" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="cantEstudiantesDesertores">Cantidad de Estudiantes Desertores</label>
-                                <input type="number" min="0" class="form-control" name="cantEstudiantesDesertores"
-                                       value="{{ periodo.cantEstudiantesDesertores }}" required>
-                            </div>
-
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-primary">Guardar cambios</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
         {% endfor %}
         </tbody>
     </table>
 </div>
+
+{% for periodo in periodos %}
+<!-- Modal para editar período -->
+<div class="modal fade" id="editarPeriodoModal{{ periodo.numPeriodo }}_{{ periodo.numAnio }}" tabindex="-1" role="dialog"
+     aria-labelledby="editarPeriodoModalLabel{{ periodo.numPeriodo }}_{{ periodo.numAnio }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarPeriodoModalLabel{{ periodo.numPeriodo }}_{{ periodo.numAnio }}">Modificar
+                    Período {{ periodo.numPeriodo }} - Año {{ periodo.numAnio }}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{{ url_for('actualizarPeriodo') }}" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="numPeriodo" value="{{ periodo.numPeriodo }}">
+                    <input type="hidden" name="numAnio" value="{{ periodo.numAnio }}">
+
+                    <div class="form-group">
+                        <label for="cantEstudiantesHombre">Cantidad de Estudiantes Hombres</label>
+                        <input type="number" min="0" class="form-control" name="cantEstudiantesHombre"
+                               value="{{ periodo.cantEstudiantesHombre }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cantEstudiantesMujer">Cantidad de Estudiantes Mujeres</label>
+                        <input type="number" min="0" class="form-control" name="cantEstudiantesMujer"
+                               value="{{ periodo.cantEstudiantesMujer }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cantEstudiantesEgresados">Cantidad de Estudiantes Egresados</label>
+                        <input type="number" min="0" class="form-control" name="cantEstudiantesEgresados"
+                               value="{{ periodo.cantEstudiantesEgresados }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cantEstudiantesDesertores">Cantidad de Estudiantes Desertores</label>
+                        <input type="number" min="0" class="form-control" name="cantEstudiantesDesertores"
+                               value="{{ periodo.cantEstudiantesDesertores }}" required>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
