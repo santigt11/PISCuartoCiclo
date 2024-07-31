@@ -352,15 +352,15 @@ def obtener_ultimo_numPeriodo(numAnio):
             cursor.close()
             connection.close()
 
-def crear_periodo(numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, cantEstudiantesMatriculados):
+def crear_periodo(numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores):
     try:
         connection = connectionBD()
         cursor = connection.cursor()
         nuevo_numPeriodo = obtener_ultimo_numPeriodo(numAnio)
         if nuevo_numPeriodo is None:
             return "Error al generar nuevo número de periodo"
-        sql = "INSERT INTO periodo (numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, cantEstudiantesMatriculados) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-        valores = (nuevo_numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, cantEstudiantesMatriculados)
+        sql = "INSERT INTO periodo (numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores) VALUES (%s, %s, %s, %s, %s, %s)"
+        valores = (nuevo_numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores)
         cursor.execute(sql, valores)
         connection.commit()
         return f"Periodo creado exitosamente con número: {nuevo_numPeriodo}"
@@ -379,8 +379,7 @@ def crearPeriodo():
         cantEstudiantesMujer = int(request.form['cantEstudiantesMujer'])
         cantEstudiantesEgresados = int(request.form['cantEstudiantesEgresados'])
         cantEstudiantesDesertores = int(request.form['cantEstudiantesDesertores'])
-        cantEstudiantesMatriculados = int(request.form['cantEstudiantesMatriculados'])
-        resultado = crear_periodo(numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, cantEstudiantesMatriculados)
+        resultado = crear_periodo(numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores)
         flash(resultado)
         return redirect(url_for('periodoCreado'))
     
@@ -388,7 +387,7 @@ def crearPeriodo():
     try:
         connection = connectionBD()
         cursor = connection.cursor()
-        cursor.execute("SELECT DISTINCT numAnio FROM periodo ORDER BY numAnio")
+        cursor.execute("SELECT DISTINCT numAnio FROM anio ORDER BY numAnio")
         anios = cursor.fetchall()
     except mysql.connector.Error as error:
         flash(f"Error al obtener años: {error}")
@@ -398,9 +397,13 @@ def crearPeriodo():
             cursor.close()
             connection.close()
 
+    # Transformar la lista de tuplas a una lista de valores enteros
+    anios = [anio[0] for anio in anios]
+
     return render_template('registrarPeriodo.html', anios=anios)
+
     
-@app.route('/crear_Periodo')
+@app.route('/periodo')
 def periodoCreado():
     return render_template('registrarPeriodo.html')
 
@@ -412,34 +415,59 @@ def obtenerPeriodos():
         cursor = connection.cursor(dictionary=True)
         cursor.execute("SELECT * FROM periodo")
         periodos = cursor.fetchall()
-        return render_template('modificarPeriodo.html', periodos=periodos)
+
+        # Obtener años ya registrados
+        cursor.execute("SELECT DISTINCT numAnio FROM anio ORDER BY numAnio")
+        anios = cursor.fetchall()
     except mysql.connector.Error as error:
-        print(f"Error al obtener los periodos: {error}")
-        return "Error al obtener los periodos"
+        print(f"Error al obtener los periodos o años: {error}")
+        flash("Error al obtener los periodos o años")
+        periodos = []
+        anios = []
     finally:
         if connection.is_connected():
             cursor.close()
             connection.close()
-            
+
+    # Extraer los años de la lista de diccionarios
+    anios = [anio['numAnio'] for anio in anios]
+
+    return render_template('modificarPeriodo.html', periodos=periodos, anios=anios)
+
 @app.route('/actualizar_periodo', methods=['POST'])
 def actualizarPeriodo():
-    numPeriodo = request.form['numPeriodo']
-    numAnio = request.form['numAnio']
-    cantEstudiantesHombre = request.form['cantEstudiantesHombre']
-    cantEstudiantesMujer = request.form['cantEstudiantesMujer']
-    cantEstudiantesEgresados = request.form['cantEstudiantesEgresados']
-    cantEstudiantesDesertores = request.form['cantEstudiantesDesertores']
-    cantEstudiantesMatriculados = request.form['cantEstudiantesMatriculados']
-
     try:
+        numPeriodo = int(request.form['numPeriodo'])
+        numAnio = int(request.form['numAnio'])
+        cantEstudiantesHombre = int(request.form['cantEstudiantesHombre'])
+        cantEstudiantesMujer = int(request.form['cantEstudiantesMujer'])
+        cantEstudiantesEgresados = int(request.form['cantEstudiantesEgresados'])
+        cantEstudiantesDesertores = int(request.form['cantEstudiantesDesertores'])
+
+        print(f"numPeriodo: {numPeriodo}, numAnio: {numAnio}, cantEstudiantesHombre: {cantEstudiantesHombre}, cantEstudiantesMujer: {cantEstudiantesMujer}, cantEstudiantesEgresados: {cantEstudiantesEgresados}, cantEstudiantesDesertores: {cantEstudiantesDesertores}")
+
         connection = connectionBD()
         cursor = connection.cursor()
-        sql = "UPDATE periodo SET cantEstudiantesHombre = %s, cantEstudiantesMujer = %s, cantEstudiantesEgresados = %s, cantEstudiantesDesertores = %s, cantEstudiantesMatriculados = %s WHERE numPeriodo = %s AND numAnio = %s"
-        valores = (cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, cantEstudiantesMatriculados, numPeriodo, numAnio)
+        sql = """
+            UPDATE periodo 
+            SET numAnio = %s,
+                cantEstudiantesHombre = %s, 
+                cantEstudiantesMujer = %s, 
+                cantEstudiantesEgresados = %s, 
+                cantEstudiantesDesertores = %s
+            WHERE numPeriodo = %s
+        """
+        valores = (numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, numPeriodo)
         cursor.execute(sql, valores)
         connection.commit()
-        flash("Período actualizado exitosamente")
-    except mysql.connector.Error as error:
+
+        print(f"Filas afectadas: {cursor.rowcount}")
+
+        if cursor.rowcount == 0:
+            flash("No se encontró el período para actualizar")
+        else:
+            flash("Período actualizado exitosamente")
+    except (ValueError, mysql.connector.Error) as error:
         flash(f"Error al actualizar período: {error}")
     finally:
         if connection.is_connected():
@@ -447,6 +475,7 @@ def actualizarPeriodo():
             connection.close()
 
     return redirect(url_for('obtenerPeriodos'))
+
 
 
 if __name__ == '__main__':
