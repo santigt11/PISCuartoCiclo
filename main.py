@@ -288,12 +288,11 @@ def crearUsuario():
     if request.method == 'POST':
         clave = request.form['clave']
         correo = request.form['correo']
-        isAdmin = 1 if 'isAdmin' in request.form else 0
+        isAdmin = request.form.get('isDocente', '0')
         resultado = crear_usuario(clave, correo, isAdmin)
         flash(resultado)
-        return redirect(url_for('usuarioCreado'))
-    return render_template('registrarUsuario.html')
-
+        return render_template('registrarUsuario.html',usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+    return render_template('registrarUsuario.html',usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
 # Ruta para mostrar la creación de usuario exitosa
 @app.route('/crear_Usuario')
@@ -309,7 +308,7 @@ def obtenerUsuarios():
         cursor = connection.cursor(dictionary=True)
         cursor.execute("SELECT * FROM usuarios")
         usuarios = cursor.fetchall()
-        return render_template('modificarUsuario.html', usuarios=usuarios)
+        return render_template('modificarUsuario.html', usuarios = usuarios,usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
     except mysql.connector.Error as error:
         print(f"Error al obtener los usuarios: {error}")
         return "Error al obtener los usuarios"
@@ -391,16 +390,15 @@ def crearAnio():
         print(numAnio)
         resultado = crear_anio(numAnio)
         flash(resultado)
-        return redirect(url_for('anioCreado'))
-    return render_template('registrarAnio.html')
+        return render_template('registrarAnio.html',usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+    return render_template('registrarAnio.html',usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
 
 @app.route('/crear_Anio')
 def anioCreado():
     return render_template('registrarAnio.html')
 
-
-# Modificar Anio
+#Modificar Anio
 @app.route('/modificarAnio', methods=['GET'])
 def obtenerAnios():
     try:
@@ -408,7 +406,7 @@ def obtenerAnios():
         cursor = connection.cursor(dictionary=True)
         cursor.execute("SELECT * FROM anio")
         anios = cursor.fetchall()
-        return render_template('modificarAnio.html', anios=anios)
+        return render_template('modificarAnio.html', anios=anios, usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
     except mysql.connector.Error as error:
         print(f"Error al obtener los años: {error}")
         return "Error al obtener los años"
@@ -581,8 +579,7 @@ def actualizarPeriodo():
 def periodoCreado():
     return render_template('registrarPeriodo.html')
 
-
-# Modificar Periodo
+#Modificar Periodo
 @app.route('/modificarPeriodo', methods=['GET'])
 def obtenerPeriodos():
     try:
@@ -607,7 +604,7 @@ def obtenerPeriodos():
     # Extraer los años de la lista de diccionarios
     anios = [anio['numAnio'] for anio in anios]
 
-    return render_template('modificarPeriodo.html', periodos=periodos, anios=anios)
+    return render_template('modificarPeriodo.html', periodos=periodos, anios=anios,usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario )
 
 
 if __name__ == '__main__':
