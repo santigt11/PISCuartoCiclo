@@ -2,9 +2,9 @@ import time
 import numpy as np
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
 
-from PISCuartoCiclo.ControlAlerta import ErrorLogger, ErrorNotifier
-from PISCuartoCiclo.Subject import Subject
-from PISCuartoCiclo.alertDisplay import AlertDisplay
+from ControlAlerta import ErrorLogger, ErrorNotifier
+from Subject import Subject
+from alertDisplay import AlertDisplay
 from RungeKuttaPrediccion import RungeKuttaPrediccion
 from configBD import *
 
