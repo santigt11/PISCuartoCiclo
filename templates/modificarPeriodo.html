@@ -59,19 +59,6 @@
                                     <input type="hidden" name="numPeriodo" value="{{ periodo.numPeriodo }}">
 
                                     <div class="form-group">
-                                        <label for="numAnio">Año:</label>
-                                        <select id="numAnio" name="numAnio" required>
-                                            {% if anios %}
-                                                {% for anio in anios %}
-                                                    <option value="{{ anio }}" {% if anio == periodo.numAnio %}selected{% endif %}>{{ anio }}</option>
-                                                {% endfor %}
-                                            {% else %}
-                                                <option value="">No hay años registrados</option>
-                                            {% endif %}
-                                        </select>
-                                    </div>
-
-                                    <div class="form-group">
                                         <label for="cantEstudiantesHombre">Cantidad de Estudiantes Hombres</label>
                                         <input type="number" min="0" class="form-control" name="cantEstudiantesHombre"
                                             value="{{ periodo.cantEstudiantesHombre }}" required>

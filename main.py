@@ -513,7 +513,7 @@ def obtenerPeriodos():
     try:
         connection = connectionBD()
         cursor = connection.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM periodo")
+        cursor.execute("SELECT * FROM periodo ORDER BY numAnio")
         periodos = cursor.fetchall()
 
         # Obtener años ya registrados
