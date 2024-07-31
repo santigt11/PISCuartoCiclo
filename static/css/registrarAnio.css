@@ -3,7 +3,7 @@
 }
 .form-container {
     margin: 50px; /* Puedes ajustar el valor según tus necesidades */
-    max-width: 600px; 
+    max-width: 500px; 
 }
 
 .form-group {
@@ -29,4 +29,9 @@
 .submit-btn {
     width: calc(100% - 160px); /* Ajusta este valor para que coincida con los inputs */
     padding: 5px; /* Ajusta el padding para un mejor espaciado dentro del botón */
+}
+
+.help-text {
+    display: block;
+    margin: 15px; /* Ajusta el valor según sea necesario */
 }
