@@ -33,6 +33,58 @@ def signout():
     correoUsuario = None
     return render_template('indexDocente.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
+# Ruta para mostrar el formulario de cambio de contraseña
+@app.route('/cambiar_contrasena')
+def cambiar_contrasena():
+    global usuarioCorrecto
+    if usuarioCorrecto:
+        return render_template('changePassword.html')
+    else:
+        return redirect(url_for('login'))
+
+
+@app.route('/actualizar_contrasena', methods=['POST'])
+def actualizar_contrasena():
+    global correoUsuario
+    contrasena_actual = request.form['contrasena_actual']
+    nueva_contrasena = request.form['nueva_contrasena']
+    confirmar_contrasena = request.form['confirmar_contrasena']
+
+    # Verificar que la nueva contraseña y su confirmación coincidan
+    if nueva_contrasena != confirmar_contrasena:
+        error_message = 'La nueva contraseña y su confirmación no coinciden.'
+        return render_template('changePassword.html', error_message=error_message)
+
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor(dictionary=True)
+        querySQL = "SELECT * FROM PIS.usuarios WHERE correo = %s AND clave = %s"
+        cursor.execute(querySQL, (correoUsuario, contrasena_actual))
+        usuario = cursor.fetchone()
+
+        # Asegurarse de que se hayan leído todos los resultados antes de proceder
+        cursor.fetchall()
+        cursor.close()
+
+        if usuario:
+            cursor = connection.cursor()
+            updateSQL = "UPDATE PIS.usuarios SET clave = %s WHERE correo = %s"
+            cursor.execute(updateSQL, (nueva_contrasena, correoUsuario))
+            connection.commit()
+            flash("Contraseña actualizada exitosamente", 'success')
+            return render_template('changePassword.html', success_message="Contraseña actualizada exitosamente")
+        else:
+            error_message = 'La contraseña actual es incorrecta.'
+            return render_template('changePassword.html', error_message=error_message)
+
+    except mysql.connector.Error as error:
+        flash(f"Error al actualizar la contraseña: {error}")
+        return render_template('changePassword.html', error_message=f"Error al actualizar la contraseña: {error}")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
 @app.route('/signin', methods=['POST'])
 def signin():
     global usuarioCorrecto  # Indicamos que vamos a usar la variable global
@@ -133,6 +185,39 @@ def calculate_rungeKutta():
     }
 
     return jsonify(response_data)
+
+@app.route('/get_total_students/<int:year>', methods=['GET'])
+def get_total_students(year):
+    try:
+        connection = connectionBD()
+        cursor = connection.cursor(dictionary=True)
+
+        # First, try to get the total from the anio table
+        cursor.execute("SELECT totalEstudiantes FROM anio WHERE numAnio = %s", (year,))
+        result = cursor.fetchone()
+
+        if result:
+            total = result['totalEstudiantes']
+        else:
+            # If not found in anio table, calculate from periodo table
+            cursor.execute("""
+                SELECT SUM(cantEstudiantesTotal) as total
+                FROM periodo
+                WHERE numAnio = %s
+            """, (year,))
+            result = cursor.fetchone()
+            total = result['total'] if result and result['total'] is not None else 0
+
+        return jsonify({'total': total})
+    except mysql.connector.Error as error:
+        print(f"Error al obtener el total de estudiantes: {error}")
+        return jsonify({'error': str(error)}), 500
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+
 
 # Ruta para la página de predicción
 @app.route('/prediccion')
@@ -369,15 +454,15 @@ def obtener_ultimo_numPeriodo(numAnio):
             cursor.close()
             connection.close()
 
-def crear_periodo(numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, cantEstudiantesMatriculados):
+def crear_periodo(numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores):
     try:
         connection = connectionBD()
         cursor = connection.cursor()
         nuevo_numPeriodo = obtener_ultimo_numPeriodo(numAnio)
         if nuevo_numPeriodo is None:
             return "Error al generar nuevo número de periodo"
-        sql = "INSERT INTO periodo (numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, cantEstudiantesMatriculados) VALUES (%s, %s, %s, %s, %s, %s, %s)"
-        valores = (nuevo_numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, cantEstudiantesMatriculados)
+        sql = "INSERT INTO periodo (numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores) VALUES (%s, %s, %s, %s, %s, %s)"
+        valores = (nuevo_numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores)
         cursor.execute(sql, valores)
         connection.commit()
         return f"Periodo creado exitosamente con número: {nuevo_numPeriodo}"
@@ -397,7 +482,7 @@ def crearPeriodo():
         cantEstudiantesEgresados = int(request.form['cantEstudiantesEgresados'])
         cantEstudiantesDesertores = int(request.form['cantEstudiantesDesertores'])
         cantEstudiantesMatriculados = int(request.form['cantEstudiantesMatriculados'])
-        resultado = crear_periodo(numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, cantEstudiantesMatriculados)
+        resultado = crear_periodo(numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores)
         flash(resultado)
         return redirect(url_for('periodoCreado'))
     
@@ -446,13 +531,12 @@ def actualizarPeriodo():
     cantEstudiantesMujer = request.form['cantEstudiantesMujer']
     cantEstudiantesEgresados = request.form['cantEstudiantesEgresados']
     cantEstudiantesDesertores = request.form['cantEstudiantesDesertores']
-    cantEstudiantesMatriculados = request.form['cantEstudiantesMatriculados']
 
     try:
         connection = connectionBD()
         cursor = connection.cursor()
-        sql = "UPDATE periodo SET cantEstudiantesHombre = %s, cantEstudiantesMujer = %s, cantEstudiantesEgresados = %s, cantEstudiantesDesertores = %s, cantEstudiantesMatriculados = %s WHERE numPeriodo = %s AND numAnio = %s"
-        valores = (cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, cantEstudiantesMatriculados, numPeriodo, numAnio)
+        sql = "UPDATE periodo SET cantEstudiantesHombre = %s, cantEstudiantesMujer = %s, cantEstudiantesEgresados = %s, cantEstudiantesDesertores = %s WHERE numPeriodo = %s AND numAnio = %s"
+        valores = (cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, numPeriodo, numAnio)
         cursor.execute(sql, valores)
         connection.commit()
         flash("Período actualizado exitosamente")
