@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block navbar %}
+<a href="/administrador" class="nav-item nav-link">Regresar</a> 
+<a href="/modificarAnio" class="nav-item nav-link">Modificar</a>
+{% endblock %}
+
+{% block title %}Año{% endblock %}
+
+{% block titulo %}Gestión de los Años{% endblock %}
+
+{% block content %}
+
+<head>
+    <link rel="stylesheet" href="../static/css/registrarAnio.css">
+    <form class="form-container-title">
+        <h1>Crear Nuevo Año</h1>
+    </form>
+</head>
+
+<form action="/anio" method="POST" class="form-container">
+
+    <div class="form-group">
+        <label for="numAnio">Número de Año:</label>
+        <input type="number" min="1900" max="2100" id="numAnio" name="numAnio" required>
+        <small class="form-text text-muted">Ingrese un año entre 1900 y 2100.</small><br><br>
+    </div>
+
+    <div class="form-group">
+        <label for="totalEstudiantes">Total de Estudiantes:</label>
+        <input type="number" min="0" id="totalEstudiantes" name="totalEstudiantes" required><br><br>
+    </div>
+
+    <div class="form-group">
+        <label for="totalEgresados">Total de Egresados:</label>
+        <input type="number" min="0" id="totalEgresados" name="totalEgresados" required><br><br>
+    </div>
+
+    <div class="form-group">
+        <label for="totalDesertores">Total de Desertores:</label>
+        <input type="number" min="0" id="totalDesertores" name="totalDesertores" required><br><br>
+    </div>
+
+    <div class="form-group">
+        <input type="submit" value="Registrar Año">
+    </div>
+    
+</form>
+
+{% endblock %}
