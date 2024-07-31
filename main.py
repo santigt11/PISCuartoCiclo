@@ -31,7 +31,7 @@ def signout():
     global correoUsuario
     usuarioCorrecto = False
     correoUsuario = None
-    return render_template('indexEstudiante.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+    return render_template('indexDocente.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
 @app.route('/signin', methods=['POST'])
 def signin():
@@ -99,7 +99,7 @@ def obtener_estudiantes():
 # Ruta para la página principal
 @app.route('/')
 def principal():
-    return render_template('indexEstudiante.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
+    return render_template('indexDocente.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
 @app.route('/acercaDe')
 def informacion():
