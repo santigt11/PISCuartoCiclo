@@ -1,6 +1,10 @@
 import time
 import numpy as np
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
+
+from PISCuartoCiclo.ControlAlerta import ErrorLogger, ErrorNotifier
+from PISCuartoCiclo.Subject import Subject
+from PISCuartoCiclo.alertDisplay import AlertDisplay
 from RungeKuttaPrediccion import RungeKuttaPrediccion
 from configBD import *
 
@@ -37,13 +41,24 @@ def signin():
     global usuarioCorrecto  # Indicamos que vamos a usar la variable global
     global correoUsuario
 
+    # Crear instancia de Subject
+    subject = Subject()
+
+    # Crear observadores y adjuntarlos al Subject
+    error_logger = ErrorLogger()
+    error_notifier = ErrorNotifier()
+    alert_display = AlertDisplay()  # Nuevo observador para mostrar alertas
+    subject.attach(error_logger)
+    subject.attach(error_notifier)
+    subject.attach(alert_display)
+
     correo = request.form.get('correo')
     contrasena = request.form.get('contrasena')
 
     # Validación de campos vacíos
     if not correo or not contrasena:
         error_message = 'Por favor, completa todos los campos.'
-        time.sleep(1)  # Espera de 1 segundos antes de continuar
+        subject.notify(error_message,"validation")  # Notificar a los observadores
         return render_template('login.html', error_message=error_message, usuarioCorrecto=usuarioCorrecto,
                                correoUsuario=correoUsuario)
 
@@ -61,15 +76,13 @@ def signin():
             usuarioCorrecto = True
             correoUsuario = correo
             break
-        else:
-            print("entra a usuario correcto pero falso")
     if usuarioCorrecto:
         return redirect(url_for('principal'))  # Redirige a otra vista si las credenciales son correctas
     else:
         error_message = 'Credenciales incorrectas. Intenta de nuevo.'
+        subject.notify(error_message)  # Notificar a los observadores
         return render_template('login.html', error_message=error_message, usuarioCorrecto=usuarioCorrecto,
                                correoUsuario=correoUsuario)
-
 
 def contarUsuarios():
     conexion_MySQL = connectionBD()
