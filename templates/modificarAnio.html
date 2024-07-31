@@ -22,7 +22,6 @@
                     <th>Total de Estudiantes</th>
                     <th>Total de Egresados</th>
                     <th>Total de Desertores</th>
-                    <th>Total de Estudiantes Matriculados</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -33,7 +32,6 @@
                     <td>{{ anio.totalEstudiantes }}</td>
                     <td>{{ anio.totalEgresados }}</td>
                     <td>{{ anio.totalDesertores }}</td>
-                    <td>{{ anio.totalEstudiantesMatriculados }}</td>
                     <td>
                         <button class="btn btn-primary" data-toggle="modal" data-target="#editarAnioModal{{ anio.numAnio }}">Editar</button>
                     </td>
@@ -53,6 +51,14 @@
                             <form action="{{ url_for('actualizarAnio') }}" method="post">
                                 <div class="modal-body">
                                     <input type="hidden" name="numAnio" value="{{ anio.numAnio }}">
+                                    
+                                    <div class="form-group">
+                                        <label for="nuevo_numAnio">Nuevo Año</label>
+                                        <input type="number" min="1900" max="2100" class="form-control" name="nuevo_numAnio" 
+                                            value="{{ anio.numAnio }}" required>
+                                        <small class="form-text text-muted">Ingrese un año entre 1900 y 2100.</small>
+                                    </div>
+
                                     <div class="form-group">
                                         <label for="totalEstudiantes">Total de Estudiantes</label>
                                         <input type="number" min="0" class="form-control" name="totalEstudiantes"
@@ -69,12 +75,6 @@
                                         <label for="totalDesertores">Total de Desertores</label>
                                         <input type="number" min="0" class="form-control" name="totalDesertores"
                                             value="{{ anio.totalDesertores }}" required>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="totalEstudiantesMatriculados">Total de Estudiantes Matriculados</label>
-                                        <input type="number" min="0" class="form-control" name="totalEstudiantesMatriculados"
-                                            value="{{ anio.totalEstudiantesMatriculados }}" required>
                                     </div>
 
                                 </div>
