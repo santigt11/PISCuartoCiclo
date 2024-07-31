@@ -65,11 +65,11 @@
                                             required>
                                     </div>
                                     <div class="form-group form-check">
-                                        <input type="checkbox" class="form-check-input" name="isDocente"
-                                            id="isDocente{{ usuario.id_Usuario }}" {% if usuario.isDocente %}checked{%
+                                        <input type="checkbox" class="form-check-input" name="isAdmin"
+                                            id="isAdmin{{ usuario.id_Usuario }}" {% if usuario.isAdmin %}checked{%
                                             endif %}>
-                                        <label class="form-check-label" for="isDocente{{ usuario.id_Usuario }}">Es
-                                            Docente</label>
+                                        <label class="form-check-label" for="isAdmin{{ usuario.id_Usuario }}">Es
+                                            Administrador</label>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
