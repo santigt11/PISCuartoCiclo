@@ -160,7 +160,7 @@ def informacion():
 #Ruta para el administrador
 @app.route('/administrador')
 def administrador():
-    return render_template('indexAdministrador.html')
+    return render_template('indexAdministrador.html', usuarioCorrecto=usuarioCorrecto, correoUsuario=correoUsuario)
 
 # Ruta para calcular los datos con el método de Euler
 @app.route('/calculate_rungeKutta', methods=['POST'])
