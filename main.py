@@ -74,7 +74,10 @@ def signin():
             correoUsuario = correo
             break
     if usuarioCorrecto:
-        return redirect(url_for('principal'))  # Redirige a otra vista si las credenciales son correctas
+        if usuario['isAdmin'] == 1:
+            return redirect(url_for('administrador'))
+        else:
+            return redirect(url_for('principal'))  # Redirige a otra vista si las credenciales son correctas
     else:
         error_message = 'Credenciales incorrectas. Intenta de nuevo.'
         subject.notify(error_message)  # Notificar a los observadores
