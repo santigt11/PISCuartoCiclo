@@ -22,7 +22,7 @@
                     <th>ID</th>
                     <th>Correo</th>
                     <th>Contraseña</th>
-                    <th>Docente</th>
+                    <th>Administrador</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -32,7 +32,7 @@
                     <td>{{ usuario.id_Usuario }}</td>
                     <td>{{ usuario.correo }}</td>
                     <td>{{ usuario.clave }}</td>
-                    <td>{{ 'Sí' if usuario.isDocente else 'No' }}</td>
+                    <td>{{ 'Sí' if usuario.isAdmin else 'No' }}</td>
                     <td>
                         <button class="btn btn-primary" data-toggle="modal"
                             data-target="#editarUsuarioModal{{ usuario.id_Usuario }}">Editar</button>

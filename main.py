@@ -185,7 +185,7 @@ def crear_usuario(clave, correo, isDocente):
         nuevo_id = obtener_ultimo_id()
         if nuevo_id is None:
             return "Error al generar nuevo ID"
-        sql = "INSERT INTO usuarios (id_Usuario, clave, correo, isDocente) VALUES (%s, %s, %s, %s)"
+        sql = "INSERT INTO usuarios (id_Usuario, clave, correo, isAdmin) VALUES (%s, %s, %s, %s)"
         valores = (nuevo_id, clave, correo, isDocente)
         cursor.execute(sql, valores)
         connection.commit()
@@ -239,7 +239,7 @@ def actualizarUsuario():
     try:
         connection = connectionBD()
         cursor = connection.cursor()
-        sql = "UPDATE usuarios SET clave = %s, correo = %s, isDocente = %s WHERE id_Usuario = %s"
+        sql = "UPDATE usuarios SET clave = %s, correo = %s, isAdmin = %s WHERE id_Usuario = %s"
         valores = (clave, correo, isDocente, id_usuario)
         cursor.execute(sql, valores)
         connection.commit()
@@ -276,7 +276,7 @@ def crear_anio(totalEstudiantes, totalEgresados, totalDesertores, totalEstudiant
         nuevo_numAnio = obtener_ultimo_numAnio()
         if nuevo_numAnio is None:
             return "Error al generar nuevo número de año"
-        sql = "INSERT INTO anio (numAnio, totalEstudiantes, totalEgresados, totalDesertores, totalEstudiantesMatriculados) VALUES (%s, %s, %s, %s, %s)"
+        sql = "INSERT INTO anio (numAnio, totalEstudiantes, totalEgresados, totalDesertores) VALUES (%s, %s, %s, %s)"
         valores = (nuevo_numAnio, totalEstudiantes, totalEgresados, totalDesertores, totalEstudiantesMatriculados)
         cursor.execute(sql, valores)
         connection.commit()
@@ -332,7 +332,7 @@ def actualizarAnio():
     try:
         connection = connectionBD()
         cursor = connection.cursor()
-        sql = "UPDATE anio SET totalEstudiantes = %s, totalEgresados = %s, totalDesertores = %s, totalEstudiantesMatriculados = %s WHERE numAnio = %s"
+        sql = "UPDATE anio SET totalEstudiantes = %s, totalEgresados = %s, totalDesertores = %s = WHERE numAnio = %s"
         valores = (totalEstudiantes, totalEgresados, totalDesertores, totalEstudiantesMatriculados, numAnio)
         cursor.execute(sql, valores)
         connection.commit()
@@ -369,7 +369,7 @@ def crear_periodo(numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstu
         nuevo_numPeriodo = obtener_ultimo_numPeriodo(numAnio)
         if nuevo_numPeriodo is None:
             return "Error al generar nuevo número de periodo"
-        sql = "INSERT INTO periodo (numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, cantEstudiantesMatriculados) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+        sql = "INSERT INTO periodo (numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, cantEstudiantesTotal) VALUES (%s, %s, %s, %s, %s, %s, %s)"
         valores = (nuevo_numPeriodo, numAnio, cantEstudiantesHombre, cantEstudiantesMujer, cantEstudiantesEgresados, cantEstudiantesDesertores, cantEstudiantesMatriculados)
         cursor.execute(sql, valores)
         connection.commit()
