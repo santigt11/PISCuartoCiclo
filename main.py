@@ -346,7 +346,7 @@ def obtener_ultimo_numAnio():
             cursor.close()
             connection.close()
 
-def crear_anio(numAnio, totalEstudiantes, totalEgresados, totalDesertores):
+def crear_anio(numAnio):
     try:
         connection = connectionBD()
         cursor = connection.cursor()
@@ -354,9 +354,9 @@ def crear_anio(numAnio, totalEstudiantes, totalEgresados, totalDesertores):
         cursor.execute("SELECT COUNT(*) FROM pis.anio WHERE numAnio = %s", (numAnio,))
         if cursor.fetchone()[0] > 0:
             return "El año ya existe"
-        
-        sql = "INSERT INTO pis.anio (numAnio, totalEstudiantes, totalEgresados, totalDesertores) VALUES (%s, %s, %s, %s)"
-        valores = (numAnio, totalEstudiantes, totalEgresados, totalDesertores)
+        sql = "INSERT INTO pis.anio (numAnio) VALUES (%s)"
+        valores = (numAnio,)
+        print("hola")
         cursor.execute(sql, valores)
         connection.commit()
         return f"Año creado exitosamente con número: {numAnio}"
@@ -372,10 +372,8 @@ def crear_anio(numAnio, totalEstudiantes, totalEgresados, totalDesertores):
 def crearAnio():
     if request.method == 'POST':
         numAnio = int(request.form['numAnio'])
-        totalEstudiantes = int(request.form['totalEstudiantes'])
-        totalEgresados = int(request.form['totalEgresados'])
-        totalDesertores = int(request.form['totalDesertores'])
-        resultado = crear_anio(numAnio, totalEstudiantes, totalEgresados, totalDesertores)
+        print(numAnio)
+        resultado = crear_anio(numAnio)
         flash(resultado)
         return redirect(url_for('anioCreado'))
     return render_template('registrarAnio.html')
