@@ -9,10 +9,6 @@
 {% block titulo %}Gestión de Usuarios{% endblock %}
 
 {% block content %}
-<head>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
-
 <body>
     <div class="container">
         <h1 class="mt-5">Modificar Usuarios</h1>
@@ -22,7 +18,7 @@
                     <th>ID</th>
                     <th>Correo</th>
                     <th>Contraseña</th>
-                    <th>Docente</th>
+                    <th>Administrador</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -32,7 +28,7 @@
                     <td>{{ usuario.id_Usuario }}</td>
                     <td>{{ usuario.correo }}</td>
                     <td>{{ usuario.clave }}</td>
-                    <td>{{ 'Sí' if usuario.isDocente else 'No' }}</td>
+                    <td>{{ 'Sí' if usuario.isAdmin else 'No' }}</td>
                     <td>
                         <button class="btn btn-primary" data-toggle="modal"
                             data-target="#editarUsuarioModal{{ usuario.id_Usuario }}">Editar</button>
@@ -65,11 +61,11 @@
                                             required>
                                     </div>
                                     <div class="form-group form-check">
-                                        <input type="checkbox" class="form-check-input" name="isDocente"
-                                            id="isDocente{{ usuario.id_Usuario }}" {% if usuario.isDocente %}checked{%
+                                        <input type="checkbox" class="form-check-input" name="isAdmin"
+                                            id="isAdmin{{ usuario.id_Usuario }}" {% if usuario.isAdmin %}checked{%
                                             endif %}>
-                                        <label class="form-check-label" for="isDocente{{ usuario.id_Usuario }}">Es
-                                            Docente</label>
+                                        <label class="form-check-label" for="isAdmin{{ usuario.id_Usuario }}">Es
+                                            Administrador</label>
                                     </div>
                                 </div>
                                 <div class="modal-footer">

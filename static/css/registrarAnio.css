@@ -1,0 +1,37 @@
+.form-container-title {
+    margin: 15px; /* Puedes ajustar el valor según tus necesidades */
+}
+.form-container {
+    margin: 50px; /* Puedes ajustar el valor según tus necesidades */
+    max-width: 500px; 
+}
+
+.form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px; /* Espaciado entre labels */
+}
+
+.form-group label {
+    width: 700px; /* Ajusta el ancho del label según tus necesidades */
+    margin-right: 10px; /* Espacio entre el label y el input */
+    text-align: right; /* Alinea el texto del label a la derecha */
+}
+
+.form-group input[type="number"]{
+    flex: 1; /* Permite que el input ocupe el espacio restante */
+}
+
+.form-group input[type="submit"] {
+    margin-left: auto; /* Alinea el botón de submit a la derecha */
+}
+
+.submit-btn {
+    width: calc(100% - 160px); /* Ajusta este valor para que coincida con los inputs */
+    padding: 5px; /* Ajusta el padding para un mejor espaciado dentro del botón */
+}
+
+.help-text {
+    display: block;
+    margin: 15px; /* Ajusta el valor según sea necesario */
+}

@@ -3,8 +3,10 @@
 {% block title %}SPD | UNL{% endblock %}
 
 {% block navbar %}
-<a href="/" class="nav-item nav-link active">Inicio</a>
-<a href="/acercaDe" class="nav-item nav-link">Acerca de</a>
+<a href="/administrador" class="nav-item nav-link active">Inicio</a>
+<a href="/administrar" class="nav-item nav-link">Administrar Usuarios</a>
+<a href="/anio" class="nav-item nav-link">Administrar Año</a>
+<a href="/periodo" class="nav-item nav-link">Administrar Periodo</a>
 {% if usuarioCorrecto %}
     <a href="/prediccion" class="nav-item nav-link">Servicios</a>
 {% endif %}
